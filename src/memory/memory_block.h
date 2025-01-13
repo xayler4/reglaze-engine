@@ -21,7 +21,7 @@ namespace rglz {
 			}
 
 		private:
-			std::unique_ptr<std::uint8_t> m_memory;
+			std::unique_ptr<std::uint8_t[]> m_memory;
 			std::size_t m_size;
 		};
 	}
