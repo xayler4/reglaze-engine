@@ -36,6 +36,7 @@ namespace rglz {
 				assert((m_marker + n) - m_memory <= m_size);
 				Marker previous_marker(m_marker);
 				m_marker = Marker(previous_marker + n);
+
 				return previous_marker;
 			}
 

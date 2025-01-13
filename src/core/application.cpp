@@ -1,8 +1,10 @@
 #include "base.h"
 #include "core/application.h"
+#include <iostream>
 
 namespace rglz {
-	Application::Application() {
+	Application::Application() : m_logger("app_log_latest.txt", "APP"){
+		m_logger.log(LoggerSeverity::Info) << "Application started";
 	}
 
 	Application::~Application() {
@@ -12,5 +14,9 @@ namespace rglz {
 	}
 
 	void Application::on_shutdown() {
+	}
+
+	void Application::flush_logger() {
+		m_logger.flush();
 	}
 }

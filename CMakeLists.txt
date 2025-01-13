@@ -4,6 +4,11 @@ project(
 	reglaze-engine 
 	VERSION 1.0)
 
+find_package(easer-lib 1.0 REQUIRED)
+
+# set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fsanitize=address")
+# set(CMAKE_LINKER_FLAGS "${CMAKE_LINKER_FLAGS} -fsanitize=address")
+
 set(
 	INCLUDE_DIR
 	${CMAKE_SOURCE_DIR}/include/reglaze)
@@ -17,7 +22,10 @@ set(
 	${INCLUDE_DIR}/base.h
 	${INCLUDE_DIR}/reglaze.h
 	${INCLUDE_DIR}/core/application.h
-	${INCLUDE_DIR}/core/engine.h)
+	${INCLUDE_DIR}/core/engine.h
+	${INCLUDE_DIR}/core/logger.h
+	${INCLUDE_DIR}/core/logger.tpp
+)
 
 set(
 	SRC
@@ -34,11 +42,24 @@ set(
 	TESTBED_SRC
 	${CMAKE_SOURCE_DIR}/testbed/app.cpp)
 
+set(
+	CMAKE_EXPORT_COMPILE_COMMANDS ON)
+
+# if (CMAKE_CXX_COMPILER_ID MATCHES "Clang|GNU")
+#     find_program(CLANG_TIDY_EXE NAMES "clang-tidy" REQUIRED)
+#     set(CMAKE_CXX_CLANG_TIDY "${CLANG_TIDY_EXE};-checks=*")
+# endif()
+
 add_library(
 	${PROJECT_NAME}
 	STATIC
 	${INCLUDE}
 	${SRC})
+
+target_link_libraries(
+	${PROJECT_NAME}
+	easer-lib
+)
 
 target_include_directories(
 	${PROJECT_NAME}
@@ -70,3 +91,4 @@ target_include_directories(
 	testbed
 	PRIVATE
 	${INCLUDE_DIR})
+

@@ -3,6 +3,7 @@
 
 #include "base.h"
 #include "core/application.h"
+#include "core/logger.h"
 #include <type_traits>
 #include <memory>
 
@@ -37,7 +38,7 @@ namespace rglz {
 			s_app = static_cast<Application*>(internal_allocate(sizeof(TApplication)));
 			std::construct_at(static_cast<TApplication*>(s_app));
 		}
-	
+
 		Engine() = delete;
 		Engine(const Engine&) = delete;
 
@@ -45,6 +46,7 @@ namespace rglz {
 		static void* internal_allocate(std::size_t size);
 
 	private:
+		static Logger<> s_logger;
 		static Application* s_app;
 	};
 }
