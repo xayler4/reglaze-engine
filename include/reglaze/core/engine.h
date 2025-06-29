@@ -14,16 +14,6 @@ namespace rglz { \
 	} \
 }
 
-#define RGLZ_MEMORY_PROFILE(default_mem_alloc_size, min_mem_alloc_size) \
-namespace rglz { \
-	const std::size_t memory_profile_default_mem_alloc_size() { \
-		return default_mem_alloc_size; \
-	}\
-	const std::size_t memory_profile_min_mem_alloc_size() { \
-		return min_mem_alloc_size; \
-	}\
-}
-
 namespace rglz {
 	class Engine {
 	public:
@@ -37,6 +27,10 @@ namespace rglz {
 		static void register_client_app() {
 			s_app = static_cast<Application*>(internal_allocate(sizeof(TApplication)));
 			std::construct_at(static_cast<TApplication*>(s_app));
+		}
+
+		static inline Application& app() {
+			return *s_app;
 		}
 
 		Engine() = delete;

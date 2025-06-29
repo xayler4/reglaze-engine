@@ -8,7 +8,6 @@
 #include <atomic>
 #include <system_error>
 #include <array>
-#include <iostream>
 
 namespace rglz {
 	class BufferedLogStream : public esr::Stream<BufferedLogStream> {
@@ -66,8 +65,10 @@ namespace rglz {
 			}
 
 			template<typename T>
-			inline Log operator<< (const T& value) {
-				return (m_logger->log(std::move(*this), value));
+			inline Log&& operator<< (const T& value) {
+				m_logger->log(*this, value);
+
+				return std::move(*this);
 			}
 
 			Log(const Log&) = delete;
@@ -93,11 +94,11 @@ namespace rglz {
 		Logger(const char* file_name, const char* logger_name);
 
 		inline Log log(LoggerSeverity severity);
-		inline void end_log(const Log& log);
-		inline void flush();
+		inline void end_log(Log& log);
+		inline void flush_logs();
 
 		template<typename T>
-		inline Log log(Log&& log, const T& value);
+		inline void log(const Log& log, const T& value);
 
 	private:
 		template<std::size_t... USeq>

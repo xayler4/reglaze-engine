@@ -1,3 +1,5 @@
+#include <iostream>
+
 namespace rglz {
 	template<std::size_t ULogLenght, std::size_t UMaxCuncurrentLogInstances>
 	Logger<ULogLenght, UMaxCuncurrentLogInstances>::Logger(const char* file_name, const char* logger_name) : 
@@ -5,7 +7,6 @@ namespace rglz {
 		m_buffered_write_streams(make_array(std::make_index_sequence<UMaxCuncurrentLogInstances>{})),
 		m_file_write_stream(m_file),
 		m_stdout_write_stream(std::cout) {
-
 	}
 
 	template<std::size_t ULogLenght, std::size_t UMaxCuncurrentLogInstances>
@@ -35,21 +36,21 @@ namespace rglz {
 
 	template<std::size_t ULogLenght, std::size_t UMaxCuncurrentLogInstances>
 	template<typename T>
-	Logger<ULogLenght, UMaxCuncurrentLogInstances>::Log Logger<ULogLenght, UMaxCuncurrentLogInstances>::log(Log&& log, const T& value) {
+	void Logger<ULogLenght, UMaxCuncurrentLogInstances>::log(const Log& log, const T& value) {
 		assert(log.m_logger != nullptr);
 		m_buffered_write_streams[log.write_buffer_index()].first << value;
-		return Log(std::move(log));
 	}
 
 	template<std::size_t ULogLenght, std::size_t UMaxCuncurrentLogInstances>
-	void Logger<ULogLenght, UMaxCuncurrentLogInstances>::end_log(const Log& log) {
+	void Logger<ULogLenght, UMaxCuncurrentLogInstances>::end_log(Log& log) {
 		assert(log.m_logger != nullptr);
 		m_buffered_write_streams[log.write_buffer_index()].first << "\"\n";
 		m_buffered_write_streams[log.write_buffer_index()].second = false;
+		log.m_logger = nullptr;
 	}
 
 	template<std::size_t ULogLenght, std::size_t UMaxCuncurrentLogInstances>
-	void Logger<ULogLenght, UMaxCuncurrentLogInstances>::flush() {
+	void Logger<ULogLenght, UMaxCuncurrentLogInstances>::flush_logs() {
 		for (std::uint32_t i = 0; i < m_buffered_write_streams.size(); i++) {
 			auto& s = m_buffered_write_streams[i];
 			auto& d = m_data[i];

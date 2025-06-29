@@ -7,21 +7,16 @@
 namespace rglz {
 	class Engine;
 
-	class Application {
+	class Application : public Logger<RGLZ_APPLICATION_LOGGER_LOG_MAX_LENGTH, RGLZ_APPLICATION_LOGGER_LOG_MAX_CUNCURRENT_LOGS> {
 	public:
-		Application();
-		~Application();
+		Application(const char* file_name = "app_log_latest.txt", const char* logger_name = "APP");
+		virtual ~Application();
 
 		virtual void on_startup();
 
 		virtual void on_shutdown();
 
 	private:
-		void flush_logger();
-
-	private:
-		Logger<> m_logger;
-
 		friend class Engine;
 	};
 }

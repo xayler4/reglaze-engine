@@ -11,11 +11,12 @@ namespace rglz {
 
 	void Engine::shutdown() {
 		std::destroy_at(s_app);
+		s_logger.flush_logs();
 	}
 
 	void Engine::run() {
-		s_logger.flush();
-		s_app->flush_logger();
+		s_app->flush_logs();
+		s_logger.flush_logs();
 	}
 
 	void* Engine::internal_allocate(std::size_t size) {

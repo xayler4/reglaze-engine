@@ -1,13 +1,18 @@
 #include "reglaze.h"
-#include <iostream>
 
 using namespace rglz;
 
 class App : public Application {
 public:
 	App() {
+		log(LoggerSeverity::Info) << "App initialized";
+
+	}
+
+	~App() {
+		log(LoggerSeverity::Info) << "App shutdown";
+
 	}
 };
 
 RGLZ_REGISTER_CLIENT_APP(App);
-RGLZ_MEMORY_PROFILE(4048, 0);

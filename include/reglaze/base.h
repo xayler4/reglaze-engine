@@ -7,4 +7,7 @@
 	#define RGLZ_PLATFORM_WINDOWS
 #endif
 
+#include "config.h"
+#include "config.def.h"
+
 #endif	// RGLZ_BASE_H

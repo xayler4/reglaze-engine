@@ -2,7 +2,8 @@ cmake_minimum_required(VERSION 3.15...3.30)
 
 project(
 	reglaze-engine 
-	VERSION 1.0)
+	VERSION 1.0
+)
 
 find_package(easer-lib 1.0 REQUIRED)
 
@@ -20,6 +21,8 @@ set(
 set(
 	INCLUDE
 	${INCLUDE_DIR}/base.h
+	${INCLUDE_DIR}/config.h
+	${INCLUDE_DIR}/config.def.h
 	${INCLUDE_DIR}/reglaze.h
 	${INCLUDE_DIR}/core/application.h
 	${INCLUDE_DIR}/core/engine.h
@@ -36,14 +39,17 @@ set(
 	${SRC_DIR}/core/application.cpp
 	${SRC_DIR}/core/engine.cpp
 	${SRC_DIR}/memory/memory_manager.cpp
-	${SRC_DIR}/memory/memory_block.cpp)
+	${SRC_DIR}/memory/memory_block.cpp
+)
 
 set(
 	TESTBED_SRC
-	${CMAKE_SOURCE_DIR}/testbed/app.cpp)
+	${CMAKE_SOURCE_DIR}/testbed/app.cpp
+)
 
 set(
-	CMAKE_EXPORT_COMPILE_COMMANDS ON)
+	CMAKE_EXPORT_COMPILE_COMMANDS ON
+)
 
 # if (CMAKE_CXX_COMPILER_ID MATCHES "Clang|GNU")
 #     find_program(CLANG_TIDY_EXE NAMES "clang-tidy" REQUIRED)
@@ -54,7 +60,8 @@ add_library(
 	${PROJECT_NAME}
 	STATIC
 	${INCLUDE}
-	${SRC})
+	${SRC}
+)
 
 target_link_libraries(
 	${PROJECT_NAME}
@@ -65,30 +72,36 @@ target_include_directories(
 	${PROJECT_NAME}
 	PRIVATE
 	${INCLUDE_DIR}
-	${SRC_DIR})
+	${SRC_DIR}
+)
 
 target_compile_features(
 	${PROJECT_NAME} 
 	PUBLIC 
-	cxx_std_20)
+	cxx_std_20
+)
 
 set_target_properties(
 	${PROJECT_NAME} 
 	PROPERTIES 
 	CXX_EXTENSIONS OFF
-	LINKER_LANGUAGE CXX)
+	LINKER_LANGUAGE CXX
+)
 
 add_executable(
 	testbed 
-	${TESTBED_SRC})
+	${TESTBED_SRC}
+)
 
 target_link_libraries(
 	testbed
 	PRIVATE
-	${PROJECT_NAME})
+	${PROJECT_NAME}
+)
 
 target_include_directories(
 	testbed
 	PRIVATE
-	${INCLUDE_DIR})
+	${INCLUDE_DIR}
+)
 

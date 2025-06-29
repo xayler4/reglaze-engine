@@ -2,14 +2,11 @@
 #include "memory/memory_block.h"
 #include "memory/memory_manager.h"
 #include <array>
-#include <iostream>
 #include <cstdlib>
 #include <cstring>
 
 namespace rglz {
 	extern void register_client_app();
-	extern const std::size_t memory_profile_default_mem_alloc_size();
-	extern const std::size_t memory_profile_min_mem_alloc_size();
 } // namespace rglz
 
 static constexpr std::uint32_t s_max_option_lenght = 19;
@@ -30,7 +27,8 @@ static const char* cmd_option_value(int argc, const char** argv, const char* opt
 }
 
 int main(int argc, const char** argv) {
-	std::size_t total_allocation_size = rglz::memory_profile_default_mem_alloc_size();
+	std::size_t total_allocation_size = RGLZ_MEMORY_PROFILE_DEFAULT_MEM_ALLOC_SIZE;
+	std::size_t min_allocation_size = RGLZ_MEMORY_PROFILE_MIN_MEM_ALLOC_SIZE;
 
 	{
 		const char* total_allocation_size_str{};
@@ -48,7 +46,7 @@ int main(int argc, const char** argv) {
 			}
 		}
 
-		if (total_allocation_size < rglz::memory_profile_min_mem_alloc_size()) {
+		if (total_allocation_size < min_allocation_size) {
 			return -1;
 		}
 	}
