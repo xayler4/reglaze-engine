@@ -17,6 +17,9 @@ namespace rglz { \
 namespace rglz {
 	class Engine {
 	public:
+		using LoggerType = Logger<>;
+
+	public:
 		static void startup();
 
 		static void shutdown();
@@ -33,6 +36,21 @@ namespace rglz {
 			return *s_app;
 		}
 
+		static inline LoggerType::Log log(LoggerSeverity severity) {
+			return s_logger.log(severity);
+
+		}
+		static inline void end_log(LoggerType::Log& log) {
+			s_logger.end_log(log);
+
+		}
+		static inline void flush_logs() {
+			s_logger.flush_logs();
+		}
+		static inline const LoggerType* logger() {
+			return &s_logger;
+		}
+
 		Engine() = delete;
 		Engine(const Engine&) = delete;
 
@@ -40,7 +58,7 @@ namespace rglz {
 		static void* internal_allocate(std::size_t size);
 
 	private:
-		static Logger<> s_logger;
+		static LoggerType s_logger;
 		static Application* s_app;
 	};
 }
