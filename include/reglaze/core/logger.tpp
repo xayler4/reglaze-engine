@@ -2,11 +2,19 @@
 
 namespace rglz {
 	template<std::size_t ULogLenght, std::size_t UMaxCuncurrentLogInstances>
-	Logger<ULogLenght, UMaxCuncurrentLogInstances>::Logger(const char* file_name, const char* logger_name) : 
-		m_name(logger_name), m_file(file_name, std::ios_base::binary),
+	Logger<ULogLenght, UMaxCuncurrentLogInstances>::Logger(std::string_view file_name, std::string_view logger_name) : 
+		m_log_prefix(logger_name.length() + 5),
+		m_file(file_name.data(), std::ios_base::binary),
 		m_buffered_write_streams(make_array(std::make_index_sequence<UMaxCuncurrentLogInstances>{})),
 		m_file_write_stream(m_file),
 		m_stdout_write_stream(std::cout) {
+
+		m_log_prefix[0] = '[';
+		std::memcpy(m_log_prefix.data() + 1, logger_name.data(), logger_name.length());
+		m_log_prefix[logger_name.length() + 1] = ' ';
+		m_log_prefix[logger_name.length() + 2] = '-';
+		m_log_prefix[logger_name.length() + 3] = '>';
+		m_log_prefix[logger_name.length() + 4] = ' ';
 	}
 
 	template<std::size_t ULogLenght, std::size_t UMaxCuncurrentLogInstances>
@@ -29,7 +37,7 @@ namespace rglz {
 
 			expected = false;
 		}
-		m_buffered_write_streams[index].first << '[' << m_name << ':' << severity << "] - \"";
+		m_buffered_write_streams[index].first << m_log_prefix << severity << "]: ";
 
 		return Log(this, severity, index);
 	}
@@ -37,14 +45,14 @@ namespace rglz {
 	template<std::size_t ULogLenght, std::size_t UMaxCuncurrentLogInstances>
 	template<typename T>
 	void Logger<ULogLenght, UMaxCuncurrentLogInstances>::log(const Log& log, const T& value) {
-		assert(log.m_logger != nullptr);
+		RGLZ_ENGINE_ASSERT(log.m_logger != nullptr);
 		m_buffered_write_streams[log.write_buffer_index()].first << value;
 	}
 
 	template<std::size_t ULogLenght, std::size_t UMaxCuncurrentLogInstances>
 	void Logger<ULogLenght, UMaxCuncurrentLogInstances>::end_log(Log& log) {
-		assert(log.m_logger != nullptr);
-		m_buffered_write_streams[log.write_buffer_index()].first << "\"\n";
+		RGLZ_ENGINE_ASSERT(log.m_logger != nullptr);
+		m_buffered_write_streams[log.write_buffer_index()].first << "\n";
 		m_buffered_write_streams[log.write_buffer_index()].second = false;
 		log.m_logger = nullptr;
 	}

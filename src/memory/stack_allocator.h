@@ -3,7 +3,6 @@
 
 #include "base.h"
 #include <memory>
-#include <cassert>
 
 namespace rglz {
 	namespace memory {
@@ -33,7 +32,7 @@ namespace rglz {
 			
 			template<typename T = std::uint8_t>
 			T* allocate(std::size_t n) {
-				assert((m_marker + n) - m_memory <= m_size);
+				RGLZ_ENGINE_ASSERT((m_marker + n) - m_memory <= m_size);
 				Marker previous_marker(m_marker);
 				m_marker = Marker(previous_marker + n);
 

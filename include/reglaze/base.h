@@ -9,5 +9,6 @@
 
 #include "config.h"
 #include "config.def.h"
+#include "report_assertion_failure.h"
 
 #endif	// RGLZ_BASE_H
