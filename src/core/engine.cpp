@@ -1,12 +1,14 @@
+#include "pch.h"
 #include "core/engine.h"
 #include "memory/memory_manager.h"
+#include "core/preferences.h"
 
 namespace rglz {
 	Application* Engine::s_app = nullptr;
-	Logger<> Engine::s_logger = Logger("rglz_latest_log.txt", "RGLZ");
+	Logger<3> Engine::s_logger = Logger<3>("rglz_latest_log.txt", "RGLZ");
 
 	void Engine::startup() {
-
+		Preferences pref("options.txt");
 	}
 
 	void Engine::shutdown() {
@@ -15,6 +17,7 @@ namespace rglz {
 	}
 
 	void Engine::run() {
+		memory::MemoryManager::update();
 		s_app->flush_logs();
 		s_logger.flush_logs();
 	}

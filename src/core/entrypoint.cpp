@@ -1,9 +1,14 @@
+#include "pch.h"
 #include "core/engine.h"
 #include "memory/memory_block.h"
 #include "memory/memory_manager.h"
-#include <array>
-#include <cstdlib>
-#include <cstring>
+
+enum ReturnCode : int {
+	OK = 0,
+	FATAL_ERROR = -1,
+	BAD_ARGUMENTS = -2,
+	BAD_ALLOC = -3
+};
 
 namespace rglz {
 	extern void register_client_app();
@@ -47,18 +52,34 @@ int main(int argc, const char** argv) {
 		}
 
 		if (total_allocation_size < min_allocation_size) {
-			return -1;
+			return BAD_ARGUMENTS;
 		}
 	}
 
 	rglz::memory::MemoryBlock memory_block(total_allocation_size);
+	if (memory_block.is_bad_alloc()) {
+		return BAD_ALLOC;
+	}
 
-	rglz::memory::MemoryManager::startup(memory_block);
-	rglz::register_client_app();
-	rglz::Engine::startup();
-	rglz::Engine::run();
+	const std::uint8_t stack_allocator_size_percentage = 70;
+	const std::uint8_t single_frame_allocator_size_percentage = 30;
+
+	rglz::memory::MemoryManager::startup(memory_block, stack_allocator_size_percentage, single_frame_allocator_size_percentage);
+
+	try {
+		rglz::register_client_app();
+		rglz::Engine::startup();
+		rglz::Engine::run();
+	}
+	catch (const rglz::FatalError& e) {
+		rglz::Engine::flush_logs();
+		rglz::Engine::app().flush_logs();
+
+		return FATAL_ERROR;
+	}
+
 	rglz::Engine::shutdown();
 	rglz::memory::MemoryManager::shutdown();
 
-	return 0;
+	return OK;
 }

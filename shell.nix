@@ -6,8 +6,8 @@ let
   		src = pkgs.fetchFromGitHub {
 			owner = "xayler4";
 			repo = "easer";
-			rev = "5552d50c67cbaac62327b43698fa1311946c1e14";
-			sha256 = "sha256-6xchGr/pJ4ibiQ9YHLrGQ2RZ1eLtb7Rdr9JKNKCL160=";
+			rev = "main";
+			sha256 = "sha256-k9di9Bt7aY7TOh2mAHZ6qtHorpU/6prACXgQnl+c3Q8=";
 		};
 		nativeBuildInputs = [ pkgs.cmake ];
 		buildInputs = [ pkgs.clang pkgs.boost ];

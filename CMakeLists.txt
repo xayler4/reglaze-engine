@@ -23,12 +23,13 @@ set(
 	${INCLUDE_DIR}/base.h
 	${INCLUDE_DIR}/config.h
 	${INCLUDE_DIR}/config.def.h
-	${INCLUDE_DIR}/report_assertion_failure.h
+	${INCLUDE_DIR}/errors.h
 	${INCLUDE_DIR}/reglaze.h
 	${INCLUDE_DIR}/core/application.h
 	${INCLUDE_DIR}/core/engine.h
 	${INCLUDE_DIR}/core/logger.h
 	${INCLUDE_DIR}/core/logger.tpp
+	${INCLUDE_DIR}/core/preferences.h
 	${INCLUDE_DIR}/containers/fixed_string.h
 )
 
@@ -37,10 +38,12 @@ set(
 	${SRC_DIR}/memory/memory_manager.h
 	${SRC_DIR}/memory/memory_block.h
 	${SRC_DIR}/memory/stack_allocator.h
-	${SRC_DIR}/report_assertion_failure.cpp
+	${SRC_DIR}/errors.cpp
 	${SRC_DIR}/core/entrypoint.cpp
+	${SRC_DIR}/core/logger.cpp
 	${SRC_DIR}/core/application.cpp
 	${SRC_DIR}/core/engine.cpp
+	${SRC_DIR}/core/preferences.cpp
 	${SRC_DIR}/memory/memory_manager.cpp
 	${SRC_DIR}/memory/memory_block.cpp
 )
@@ -64,6 +67,12 @@ add_library(
 	STATIC
 	${INCLUDE}
 	${SRC}
+)
+
+target_precompile_headers(
+	${PROJECT_NAME}
+	PRIVATE
+	${SRC_DIR}/pch.h
 )
 
 target_link_libraries(

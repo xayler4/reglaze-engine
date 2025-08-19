@@ -17,7 +17,7 @@ namespace rglz { \
 namespace rglz {
 	class Engine {
 	public:
-		using LoggerType = Logger<>;
+		using LoggerType = Logger<3>;
 
 	public:
 		static void startup();

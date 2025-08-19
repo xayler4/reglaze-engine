@@ -1,7 +1,7 @@
 #ifndef RGLZ_MEMORY_MEMORY_MANAGER_H
 #define RGLZ_MEMORY_MEMORY_MANAGER_H
 
-#include "base.h"
+#include "pch.h"
 #include "memory/memory_block.h"
 #include "memory/stack_allocator.h"
 
@@ -15,18 +15,21 @@ namespace rglz {
 		public:
 			MemoryManager() = delete;
 
+			static void startup(MemoryBlock& memory_block, const std::uint8_t stack_allocator_size_percentage, const std::uint8_t single_frame_allocator_size_percentage);
+			static void update();
+			static void shutdown();
+
 			inline static StackAllocator& stack_allocator() {
 				return s_stack_allocator;
 			}
 
-		private:
-			static void startup(MemoryBlock& memory_block);
-			static void shutdown();
+			inline static StackAllocator& single_frame_allocator() {
+				return s_single_frame_allocator;
+			}
 
 		private:
 			static StackAllocator s_stack_allocator;
-
-			friend int ::main(int argc, const char** argv);
+			static StackAllocator s_single_frame_allocator;
 		};
 	}
 }

@@ -1,8 +1,7 @@
 #ifndef RGLZ_MEMORY_STACK_ALLOCATOR_H
 #define RGLZ_MEMORY_STACK_ALLOCATOR_H
 
-#include "base.h"
-#include <memory>
+#include "pch.h"
 
 namespace rglz {
 	namespace memory {
@@ -15,9 +14,9 @@ namespace rglz {
 				}
 
 			private:
-				Marker(std::uint8_t* ptr) : m_ptr(ptr) {
-
-				}
+				Marker(std::uint8_t* ptr) 
+					: m_ptr(ptr) 
+				{}
 
 			private:
 				std::uint8_t* m_ptr;
@@ -27,8 +26,10 @@ namespace rglz {
 
 		public:
 			StackAllocator(std::uint8_t* memory, std::size_t size) 
-				: m_memory(memory), m_marker(memory), m_size(size) {
-			}
+				: m_memory(memory)
+				, m_marker(memory)
+				, m_size(size) 
+			{}
 			
 			template<typename T = std::uint8_t>
 			T* allocate(std::size_t n) {

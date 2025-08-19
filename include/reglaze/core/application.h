@@ -7,7 +7,7 @@
 namespace rglz {
 	class Engine;
 
-	class Application : public Logger<RGLZ_APPLICATION_LOGGER_LOG_MAX_LENGTH, RGLZ_APPLICATION_LOGGER_LOG_MAX_CUNCURRENT_LOGS> {
+	class Application : public Logger<RGLZ_LOGGER_LOG_MAX_CUNCURRENT_LOGS> {
 	public:
 		Application(const char* file_name = "app_log_latest.txt", const char* logger_name = "APP");
 		virtual ~Application();
