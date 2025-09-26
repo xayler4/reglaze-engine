@@ -12,8 +12,6 @@ namespace rglz {
 		, m_stdout_write_stream(std::cout) 
 
 	{
-		std::cout << std::boolalpha << esr::WriteStream<BufferedLogStream>::StreamType::should_trigger_write_too_large() << std::endl;
-
 		m_log_prefix[0] = '\n';
 		m_log_prefix[1] = '[';
 		std::memcpy(m_log_prefix.data() + 2, logger_name.data(), logger_name.length());

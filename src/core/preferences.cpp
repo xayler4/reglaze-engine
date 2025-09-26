@@ -5,53 +5,124 @@
 
 namespace rglz {
 	Attribute::Attribute() 
-		: m_type(AttributeType::None)
-		, m_value{0}
-	{}
+		: m_name("")
+		, m_value(nullptr)
+	{
+	}
 
-	Attribute::Attribute(std::string_view name, bool value) 
-		: m_type(AttributeType::Boolean)
-		, m_name(name)
-		, m_value{.b = value}
-	{}
+	Attribute::Attribute(std::string_view name, bool value)
+		: m_name(name)
+		, m_value(value)
+
+	{
+		RGLZ_ASSERT_MSG(is_string_valid(name), "Attribute string must contain only alphanumeric characters or spaces!");
+	}
 
 	Attribute::Attribute(std::string_view name, double value)
-		: m_type(AttributeType::Double)
-		, m_name(name)
-		, m_value{.i = value} 
-	{}
+		: m_name(name)
+		, m_value(value)
 
-	Attribute::Attribute(std::string_view name, std::string_view value) 
-		: m_type(AttributeType::String)
-		, m_name(name)
-		, m_value{.s = value} 
-	{}
+	{
+		RGLZ_ASSERT_MSG(is_string_valid(name), "Attribute string must contain only alphanumeric characters or spaces!");
+	}
 
-	Preferences::Preferences(std::string_view file_path) {
-		// std::ofstream m_ofile(file_name.data());
-		std::ifstream file(file_path.data(), std::ios::binary);
-		// esr::WriteStream<PreferencesStream> m_ofile_stream(m_ofile);
-		// esr::ReadStream<PreferencesStream> m_ifile_stream(m_ifile);
+	Attribute::Attribute(std::string_view name, const char* value)
+		: m_name(name)
+		, m_value(value)
+	{
+		RGLZ_ASSERT_MSG(is_string_valid(name) && is_string_valid(value), "Attribute string must contain only alphanumeric characters or spaces!");
+	}
 
-		if (!file.is_open()) {
-			RGLZ_ENGINE_LOG_ERROR("Failed to open preferences file \'", file_path, '\'');
-			return;
-		}
-		std::uint32_t line_number = 1;
-		do {
-			auto token_pair = read_line(file, file_path, line_number);
-			if (token_pair.has_value()) {
-				auto attribute = parse_attribute(token_pair->first, token_pair->second);
-				if (attribute.has_value()) {
-					m_attributes.extend(*attribute);
+	Attribute::Attribute(std::string_view name, std::string_view value)
+		: m_name(name)
+		, m_value(value)
+	{
+		RGLZ_ASSERT_MSG(is_string_valid(name) && is_string_valid(value), "Attribute string must contain only alphanumeric characters or spaces");
+	}
+
+	Attribute::Attribute(std::string_view name) 
+		: m_name(name)
+		, m_value(nullptr)
+	{
+		RGLZ_ASSERT_MSG(is_string_valid(name), "Attribute string must contain only alphanumeric characters or spaces!");
+	}
+
+	Preferences::Preferences(std::string_view file_name, FixedVector<Attribute> default_attributes) 
+		: m_default_attributes(default_attributes)
+	{
+		{
+
+			{
+				std::fstream(file_name.data(), std::fstream::app);
+			}
+			std::ifstream file(file_name.data(), std::ios::binary);
+			// esr::WriteStream<PreferencesStream> m_ofile_stream(m_ofile);
+			// esr::ReadStream<PreferencesStream> m_ifile_stream(m_ifile);
+
+			if (!file.is_open()) {
+				RGLZ_ENGINE_LOG_ERROR("Failed to open or create preferences file \"", file_name, '\"');
+				return;
+			}
+			std::uint32_t line_number = 1;
+			do {
+				auto token_pair = read_line(file, file_name, line_number);
+				if (token_pair.has_value()) {
+					auto attribute = parse_attribute(token_pair->first, token_pair->second);
+					if (attribute.has_value()) {
+						if (m_detected_attributes[attribute->name()] != nullptr) {
+							RGLZ_ENGINE_LOG_ERROR("Attribute \"", attribute->name(), "\" in preferences file \"", file_name, "\" was already defined. Ignoring all occurences except the first one.");
+						}
+						else {
+							m_detected_attributes.insert(attribute->name(), *attribute);
+						}
+					}
 				}
 			}
-		}
-		while (!file.eof());
+			while (!file.eof());
 
-		RGLZ_ENGINE_LOG_TRACE_GET(log_builder, m_attributes.size(), " Parsed Attributes in \"", file_path, "\":");
-		for (auto& attr : m_attributes) {
-			RGLZ_ENGINE_LOG_TRACE_TO(log_builder, alignln, "  ", attr);
+		}
+		std::ofstream file(file_name.data());
+		auto undeclared_attributes = m_detected_attributes;
+
+		std::size_t n_added_attributes = 0;
+		for (auto& att : m_default_attributes) {
+			auto parsed_att = m_detected_attributes[att.name()];
+			if (parsed_att != nullptr) {
+				write_attribute(*parsed_att, file);
+			}
+			else {
+				write_attribute(att, file);
+				++n_added_attributes;
+			}
+			undeclared_attributes.remove(att.name());
+		}
+
+		for (auto& att : undeclared_attributes) {
+			write_attribute(att.value, file);
+		}
+
+		RGLZ_ENGINE_LOG_TRACE_GET(parsed_attributes_log_builder, m_detected_attributes.size(), " parsed attributes in \"", file_name, "\"");
+		if (m_detected_attributes.size()) {
+			RGLZ_ENGINE_LOG_TRACE_TO(parsed_attributes_log_builder, ":");
+		}
+		for (auto& att : m_default_attributes) {
+			auto parsed_att = m_detected_attributes[att.name()];
+			if (parsed_att != nullptr) {
+				RGLZ_ENGINE_LOG_TRACE_TO(parsed_attributes_log_builder, alignln, "  ", *parsed_att);
+			}
+		}
+		for (auto& att : undeclared_attributes) {
+			RGLZ_ENGINE_LOG_TRACE_TO(parsed_attributes_log_builder, alignln, "  ", att.value);
+		}
+
+		RGLZ_ENGINE_LOG_TRACE_GET(added_attributes_log_builder, n_added_attributes, " added attributes in \"", file_name, "\"");
+		if (n_added_attributes) {
+			RGLZ_ENGINE_LOG_TRACE_TO(added_attributes_log_builder, ":");
+		}
+		for (auto& att : m_default_attributes) {
+			if (m_detected_attributes[att.name()] == nullptr) {
+				RGLZ_ENGINE_LOG_TRACE_TO(added_attributes_log_builder, alignln, "  ", att);
+			}
 		}
 	}
 
@@ -175,6 +246,9 @@ namespace rglz {
 		else if (attribute_value_string == "False") {
 			return Attribute(attribute_name, false);
 		}
+		else if (attribute_value_string == "Null") {
+			return Attribute(attribute_name);
+		}
 		else if (isdigit(attribute_value_string[0])) {
 			char* end_ptr;
 			if (attribute_value_string.length() == 1 && attribute_value_string[0] == '0') {
@@ -182,7 +256,7 @@ namespace rglz {
 			}
 			else if (double result = strtod(attribute_value_string.data(), &end_ptr)) {
 				if (errno != ERANGE && result != 0) {
-					return Attribute(attribute_name, result);
+					return Attribute(attribute_name, result );
 				}
 			}
 		}
@@ -192,5 +266,33 @@ namespace rglz {
 		}
 
 		return {};
+	}
+
+	void Preferences::write_attribute(Attribute& attribute, std::ofstream& file) {
+		file << attribute.name();
+		file << " = ";
+
+		switch (attribute.type()) {
+			case AttributeType::Boolean: {
+				bool value = attribute.boolean_value().value();
+				if (value) {
+					file << "True";
+				}
+				else {
+					file << "False";
+				}
+			} break;
+			case AttributeType::Double: {
+				file << attribute.double_value().value();
+			} break;
+			case AttributeType::String: {
+				file << "\"" << attribute.string_value().value() << "\"";
+			} break;
+			case AttributeType::Null: {
+				file << "Null";
+			} break;
+		}
+
+		file << std::endl;
 	}
 }

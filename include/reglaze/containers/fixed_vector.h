@@ -26,18 +26,20 @@ namespace rglz {
 			: m_size(0)
 		{}
 
-		FixedVector(const std::array<T, UCapacity>& data)
-			: m_size(data.size())
+		FixedVector(std::initializer_list<T> list)
+			: m_size(list.size())
 		{
 			RGLZ_ENGINE_ASSERT(m_size < UCapacity);
 
-			std::copy(data.begin(), data.end(), m_data.begin());
+			std::copy(list.begin(), list.end(), m_data.begin());
+
 		}
 
-		FixedVector(const std::array<T, UCapacity>& data, std::size_t size)
+		template<std::size_t USize>
+		FixedVector(const std::array<T, USize>& data)
 			: m_size(data.size())
 		{
-			RGLZ_ENGINE_ASSERT(m_size < UCapacity && m_size >= data.size());
+			RGLZ_ENGINE_ASSERT(m_size < UCapacity);
 
 			std::copy(data.begin(), data.end(), m_data.begin());
 		}
@@ -55,21 +57,23 @@ namespace rglz {
 			m_size ++;
 		} 
 
-		void extend(const T& data, std::size_t size) {
-			RGLZ_ENGINE_ASSERT(m_size < size);
+		void extend(std::initializer_list<T> list) {
+			RGLZ_ENGINE_ASSERT(m_size + list.size() < UCapacity);
+			
+			std::copy(list.begin(), list.end(), end());
+			m_size += list.size();
+		}
 
-			m_data[m_size] = data;
-			m_size = size;
-		} 
-
-		void extend(const std::array<T, UCapacity>& data) {
+		template<std::size_t USize>
+		void extend(const std::array<T, USize>& data) {
 			RGLZ_ENGINE_ASSERT(m_size + data.size() < UCapacity);
 
 			std::copy(data.begin(), data.end(), end());
 			m_size += data.size();
 		} 
 
-		void extend(const std::array<T, UCapacity>& data, std::size_t size) {
+		template<std::size_t USize>
+		void extend(const std::array<T, USize>& data, std::size_t size) {
 			RGLZ_ENGINE_ASSERT(m_size <= size && size >= (data.size() + m_size));
 
 			std::copy(data.begin(), data.end(), end());

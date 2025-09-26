@@ -9,7 +9,7 @@ namespace rglz {
 
 	class Application : public Logger<RGLZ_LOGGER_LOG_MAX_CUNCURRENT_LOGS> {
 	public:
-		Application(const char* file_name = "app_log_latest.txt", const char* logger_name = "APP");
+		Application(std::string_view file_name = "app_log_latest.txt", std::string_view logger_name = "APP");
 		virtual ~Application();
 
 		virtual void on_startup();

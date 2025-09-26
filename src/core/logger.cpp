@@ -4,7 +4,7 @@
 namespace rglz {
 	LogBuffer::LogBuffer()
 		: data(m_fixed_data)
-		, size(512)
+		, size(RGLZ_LOGGER_LOG_PREALLOCATED_LENGTH)
 	{
 	}
 

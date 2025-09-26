@@ -8,7 +8,15 @@ namespace rglz {
 	Logger<3> Engine::s_logger = Logger<3>("rglz_latest_log.txt", "RGLZ");
 
 	void Engine::startup() {
-		Preferences pref("options.txt");
+		Preferences pref("options.txt", {
+			Attribute("a", false),
+			Attribute("ab", 7.0),
+			Attribute("abc", 20.5),
+			Attribute("abcd", "my_personal_data"),
+			Attribute("abcde"),
+			Attribute("abcdef", true),
+			Attribute("abcdefg", "random_string")
+		});
 	}
 
 	void Engine::shutdown() {

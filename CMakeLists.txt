@@ -44,6 +44,7 @@ set(
 	${SRC_DIR}/core/application.cpp
 	${SRC_DIR}/core/engine.cpp
 	${SRC_DIR}/core/preferences.cpp
+	${SRC_DIR}/containers/to_hash.cpp
 	${SRC_DIR}/memory/memory_manager.cpp
 	${SRC_DIR}/memory/memory_block.cpp
 )

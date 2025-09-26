@@ -12,6 +12,7 @@ enum ReturnCode : int {
 
 namespace rglz {
 	extern void register_client_app();
+	extern std::pair<std::size_t, std::size_t> memory_profile_default_and_min_alloc_size();
 } // namespace rglz
 
 static constexpr std::uint32_t s_max_option_lenght = 19;
@@ -32,31 +33,32 @@ static const char* cmd_option_value(int argc, const char** argv, const char* opt
 }
 
 int main(int argc, const char** argv) {
-	std::size_t total_allocation_size = RGLZ_MEMORY_PROFILE_DEFAULT_MEM_ALLOC_SIZE;
-	std::size_t min_allocation_size = RGLZ_MEMORY_PROFILE_MIN_MEM_ALLOC_SIZE;
+	std::pair<std::size_t, std::size_t> memory_profile = rglz::memory_profile_default_and_min_alloc_size();
+	std::size_t allocation_size = memory_profile.first;
+	std::size_t min_allocation_size = memory_profile.second;
 
 	{
-		const char* total_allocation_size_str{};
+		const char* allocation_size_str{};
 
-		if ((total_allocation_size_str = cmd_option_value(argc, argv, "-m")) != nullptr) {
+		if ((allocation_size_str = cmd_option_value(argc, argv, "-m")) != nullptr) {
 			std::array<char, s_max_option_lenght> tmp_str{};
 			char* end_ptr{};
-			std::size_t const tmp_total_allocation_size{};
+			std::size_t tmp_allocation_size{};
 
-			std::strncpy(tmp_str.data(), total_allocation_size_str, s_max_option_lenght);
-			std::strtol(tmp_str.data(), &end_ptr, 10);
-			
-			if ((tmp_total_allocation_size != 0U) && errno != ERANGE) {
-				total_allocation_size = tmp_total_allocation_size;
+			std::strncpy(tmp_str.data(), allocation_size_str, s_max_option_lenght);
+			tmp_allocation_size = std::strtol(tmp_str.data(), &end_ptr, 10);
+
+			if ((tmp_allocation_size != 0U) && errno != ERANGE) {
+				allocation_size = tmp_allocation_size;
 			}
 		}
 
-		if (total_allocation_size < min_allocation_size) {
+		if (allocation_size < min_allocation_size) {
 			return BAD_ARGUMENTS;
 		}
 	}
 
-	rglz::memory::MemoryBlock memory_block(total_allocation_size);
+	rglz::memory::MemoryBlock memory_block(allocation_size);
 	if (memory_block.is_bad_alloc()) {
 		return BAD_ALLOC;
 	}

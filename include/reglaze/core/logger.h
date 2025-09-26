@@ -174,7 +174,6 @@ namespace rglz {
 		}
 
 		esr::WriteStreamData on_write_too_large(std::size_t required_size_delta) {
-			std::cout << "called\n";
 			m_log_buffer->grow(required_size_delta);
 
 			return {m_log_buffer->size, m_log_buffer->data, {}};

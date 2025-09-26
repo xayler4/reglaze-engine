@@ -2,6 +2,7 @@
 #define RGLZ_CONTAINERS_FIXED_STRING_H
 
 #include "base.h"
+#include "containers/fixed_hash_map.h"
 #include <string_view>
 #include <cstring>
 
@@ -25,6 +26,14 @@ namespace rglz {
 		FixedString() 
 			: m_length(0) 
 		{
+		}
+
+		FixedString(const char* str)
+			: m_length(std::strlen(str))
+		{
+			RGLZ_ENGINE_ASSERT(m_length < UMaxLength);
+
+			std::strcpy(m_data.data(), str);
 		}
 
 		FixedString(std::string_view str)
@@ -79,6 +88,10 @@ namespace rglz {
 			RGLZ_ENGINE_ASSERT(index < m_length);
 
 			return m_data[index];
+		}
+
+		inline bool operator== (std::string_view str) const {
+			return static_cast<std::string_view>(*this) == str;
 		}
 
 		inline FixedString<UMaxLength>& operator += (std::string_view str) {
@@ -150,6 +163,7 @@ namespace rglz {
 		std::array<char, UMaxLength> m_data;
 		std::size_t m_length;
 	};
+
 }
 
 #endif	// RGLZ_CONTAINERS_FIXED_STRING_H

@@ -6,11 +6,19 @@
 #include "core/logger.h"
 #include <type_traits>
 #include <memory>
+#include <utility>
 
 #define RGLZ_REGISTER_CLIENT_APP(app_type) \
 namespace rglz { \
 	void register_client_app() { \
 		Engine::register_client_app<app_type>(); \
+	} \
+}
+
+#define RGLZ_MEMORY_PROFILE_DEFAULT_AND_MIN_ALLOC_SIZE(default_alloc_size, min_alloc_size) \
+namespace rglz { \
+	std::pair<std::size_t, std::size_t> memory_profile_default_and_min_alloc_size() { \
+		return {default_alloc_size, min_alloc_size}; \
 	} \
 }
 

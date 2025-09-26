@@ -1,9 +1,9 @@
 #include "pch.h"
 #include "core/application.h"
-#include <iostream>
+#include "containers/fixed_hash_map.h"
 
 namespace rglz {
-	Application::Application(const char* file_name, const char* logger_name) : Logger(file_name, logger_name) {
+	Application::Application(std::string_view file_name, std::string_view logger_name) : Logger(file_name, logger_name) {
 	}
 
 	Application::~Application() {
