@@ -4,13 +4,14 @@
 #include "base.h"
 #include "config.h"
 #include "config.def.h"
-#include "core/logger.h"
+#include "core/engine.h"
 #include "containers/fixed_string.h"
 #include "containers/fixed_vector.h"
 
 #include <cstdint>
 #include <cstdlib>
 #include <cstring>
+#include <cmath>
 #include <memory>
 #include <charconv>
 #include <atomic>
@@ -20,5 +21,6 @@
 #include <fstream>
 #include <exception>
 #include <optional>
+#include <algorithm>
 
 #endif	// PCH_H

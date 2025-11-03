@@ -99,11 +99,11 @@ namespace rglz {
 				}
 			}
 	
-	        const reference operator*() const {
+	        const_reference operator*() const {
 	            return m_ptr->value();
 	        }
 	
-	        const pointer operator->() const {
+	        const_pointer operator->() const {
 	            return &m_ptr->value();
 	        }
 	
@@ -186,18 +186,18 @@ namespace rglz {
 
 			for (std::size_t i = initial_index; i < UCapacity; ++i) {
 				if (m_data[i].has_value()) {
-					const auto& entry = m_data[i].value();
-					if (entry.key == key) {
-						return &entry.value;
+					const Bucket& bucket = m_data[i].value();
+					if (bucket.key == key) {
+						return &bucket.value;
 					}
 				}	
 			}
 
 			for (std::size_t i = initial_index; i-- != 0; ) {
 				if (m_data[i].has_value()) {
-					const auto& entry = m_data[i].value();
-					if (entry.key == key) {
-						return &entry.value;
+					const Bucket& bucket = m_data[i].value();
+					if (bucket.key == key) {
+						return &bucket.value;
 					}
 				}	
 			}
@@ -210,18 +210,18 @@ namespace rglz {
 
 			for (std::size_t i = initial_index; i < UCapacity; ++i) {
 				if (m_data[i].has_value()) {
-					auto& entry = m_data[i].value();
-					if (entry.key == key) {
-						return &entry.value;
+					Bucket& bucket = m_data[i].value();
+					if (bucket.key == key) {
+						return &bucket.value;
 					}
 				}	
 			}
 
 			for (std::size_t i = initial_index; i-- != 0;) {
 				if (m_data[i].has_value()) {
-					auto& entry = m_data[i].value();
-					if (entry.key == key) {
-						return &entry.value;
+					Bucket& bucket = m_data[i].value();
+					if (bucket.key == key) {
+						return &bucket.value;
 					}
 				}	
 			}
@@ -253,6 +253,14 @@ namespace rglz {
 		}
 
 		inline const_iterator end() const {
+			return ConstIterator(m_data.data() + UCapacity, m_data.data() + UCapacity);
+		}
+
+		inline const_iterator cbegin() const {
+			return ConstIterator(m_data.data(), m_data.data() + UCapacity);
+		}
+
+		inline const_iterator cend() const {
 			return ConstIterator(m_data.data() + UCapacity, m_data.data() + UCapacity);
 		}
 

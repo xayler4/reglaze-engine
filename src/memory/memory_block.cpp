@@ -29,5 +29,22 @@ namespace rglz {
 				delete[] m_memory;
 			}
 		}
+
+		void MemoryBlock::realloc(std::size_t size) {
+			if (m_memory != nullptr && !m_bad_alloc) {
+				delete[] m_memory;
+			}
+
+			m_bad_alloc = false;
+
+			try {
+				m_memory = new std::uint8_t[size];
+
+				m_size = size;
+			}
+			catch(const std::bad_alloc& e) {
+				m_bad_alloc = true;
+			}
+		}
 	}
 }

@@ -1,22 +1,16 @@
 #include "pch.h"
-#include "core/engine.h"
 #include "memory/memory_manager.h"
-#include "core/preferences.h"
 
 namespace rglz {
-	Application* Engine::s_app = nullptr;
 	Logger<3> Engine::s_logger = Logger<3>("rglz_latest_log.txt", "RGLZ");
+	Application* Engine::s_app = nullptr;
 
 	void Engine::startup() {
-		Preferences pref("options.txt", {
-			Attribute("a", false),
-			Attribute("ab", 7.0),
-			Attribute("abc", 20.5),
-			Attribute("abcd", "my_personal_data"),
-			Attribute("abcde"),
-			Attribute("abcdef", true),
-			Attribute("abcdefg", "random_string")
-		});
+		if (s_app->m_preferences.has_value()) {
+			for (auto pair : s_app->m_preferences.value()) {
+				s_app->on_attribute_read(pair.value);
+			}
+		}
 	}
 
 	void Engine::shutdown() {
@@ -26,8 +20,11 @@ namespace rglz {
 
 	void Engine::run() {
 		memory::MemoryManager::update();
-		s_app->flush_logs();
+		if (s_app->m_preferences.has_value()) {
+			s_app->m_preferences.value().rebuild();
+		}
 		s_logger.flush_logs();
+		s_app->flush_logs();
 	}
 
 	void* Engine::internal_allocate(std::size_t size) {

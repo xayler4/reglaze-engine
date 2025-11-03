@@ -7,7 +7,7 @@ let
 			owner = "xayler4";
 			repo = "easer";
 			rev = "main";
-			sha256 = "sha256-k9di9Bt7aY7TOh2mAHZ6qtHorpU/6prACXgQnl+c3Q8=";
+			sha256 = "sha256-oB3bBghpwciKZln8BFXFmupUT3L7Xz96uMSDTDUkCKs=";
 		};
 		nativeBuildInputs = [ pkgs.cmake ];
 		buildInputs = [ pkgs.clang pkgs.boost ];

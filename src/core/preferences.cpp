@@ -1,132 +1,93 @@
 #include "pch.h"
 #include "core/preferences.h"
 #include <cctype>
-#include <stdlib.h>
+#include <charconv>
 
 namespace rglz {
-	Attribute::Attribute() 
-		: m_name("")
-		, m_value(nullptr)
-	{
-	}
-
-	Attribute::Attribute(std::string_view name, bool value)
-		: m_name(name)
-		, m_value(value)
-
-	{
-		RGLZ_ASSERT_MSG(is_string_valid(name), "Attribute string must contain only alphanumeric characters or spaces!");
-	}
-
-	Attribute::Attribute(std::string_view name, double value)
-		: m_name(name)
-		, m_value(value)
-
-	{
-		RGLZ_ASSERT_MSG(is_string_valid(name), "Attribute string must contain only alphanumeric characters or spaces!");
-	}
-
-	Attribute::Attribute(std::string_view name, const char* value)
-		: m_name(name)
-		, m_value(value)
-	{
-		RGLZ_ASSERT_MSG(is_string_valid(name) && is_string_valid(value), "Attribute string must contain only alphanumeric characters or spaces!");
-	}
-
-	Attribute::Attribute(std::string_view name, std::string_view value)
-		: m_name(name)
-		, m_value(value)
-	{
-		RGLZ_ASSERT_MSG(is_string_valid(name) && is_string_valid(value), "Attribute string must contain only alphanumeric characters or spaces");
-	}
-
-	Attribute::Attribute(std::string_view name) 
-		: m_name(name)
-		, m_value(nullptr)
-	{
-		RGLZ_ASSERT_MSG(is_string_valid(name), "Attribute string must contain only alphanumeric characters or spaces!");
-	}
-
-	Preferences::Preferences(std::string_view file_name, FixedVector<Attribute> default_attributes) 
-		: m_default_attributes(default_attributes)
+	Preferences::Preferences(std::string_view file_name, const FixedVector<Attribute, RGLZ_PREFERENCES_MAX_ATTRIBUTES>& default_attributes) 
+		: m_rebuild(true)
+		, m_file_name(file_name)
+		, m_default_attributes(default_attributes)
+		, m_current_attributes()
 	{
 		{
+			std::fstream(m_file_name.data(), std::fstream::app);
+		}
+		std::ifstream file(m_file_name.data(), std::ios::binary);
+		// esr::WriteStream<PreferencesStream> m_ofile_stream(m_ofile);
+		// esr::ReadStream<PreferencesStream> m_ifile_stream(m_ifile);
 
-			{
-				std::fstream(file_name.data(), std::fstream::app);
-			}
-			std::ifstream file(file_name.data(), std::ios::binary);
-			// esr::WriteStream<PreferencesStream> m_ofile_stream(m_ofile);
-			// esr::ReadStream<PreferencesStream> m_ifile_stream(m_ifile);
-
-			if (!file.is_open()) {
-				RGLZ_ENGINE_LOG_ERROR("Failed to open or create preferences file \"", file_name, '\"');
-				return;
-			}
-			std::uint32_t line_number = 1;
-			do {
-				auto token_pair = read_line(file, file_name, line_number);
-				if (token_pair.has_value()) {
-					auto attribute = parse_attribute(token_pair->first, token_pair->second);
-					if (attribute.has_value()) {
-						if (m_detected_attributes[attribute->name()] != nullptr) {
-							RGLZ_ENGINE_LOG_ERROR("Attribute \"", attribute->name(), "\" in preferences file \"", file_name, "\" was already defined. Ignoring all occurences except the first one.");
-						}
-						else {
-							m_detected_attributes.insert(attribute->name(), *attribute);
-						}
+		if (!file.is_open()) {
+			RGLZ_ENGINE_LOG_ERROR("Failed to open or create preferences file \"", m_file_name, '\"');
+			return;
+		}
+		std::uint32_t line_number = 1;
+		do {
+			auto token_pair = read_line(file, m_file_name, line_number);
+			if (token_pair.has_value()) {
+				auto attribute = parse_attribute(token_pair->first, token_pair->second);
+				if (attribute.has_value()) {
+					if (m_current_attributes[attribute->name()] != nullptr) {
+						RGLZ_ENGINE_LOG_ERROR("Attribute \"", attribute->name(), "\" in preferences file \"", m_file_name, "\" was already defined. Ignoring all occurences except the first one.");
+					}
+					else {
+						m_current_attributes.insert(attribute->name(), *attribute);
 					}
 				}
 			}
-			while (!file.eof());
+		}
+		while (!file.eof());
 
-		}
-		std::ofstream file(file_name.data());
-		auto undeclared_attributes = m_detected_attributes;
-
-		std::size_t n_added_attributes = 0;
-		for (auto& att : m_default_attributes) {
-			auto parsed_att = m_detected_attributes[att.name()];
-			if (parsed_att != nullptr) {
-				write_attribute(*parsed_att, file);
-			}
-			else {
-				write_attribute(att, file);
-				++n_added_attributes;
-			}
-			undeclared_attributes.remove(att.name());
-		}
-
-		for (auto& att : undeclared_attributes) {
-			write_attribute(att.value, file);
-		}
-
-		RGLZ_ENGINE_LOG_TRACE_GET(parsed_attributes_log_builder, m_detected_attributes.size(), " parsed attributes in \"", file_name, "\"");
-		if (m_detected_attributes.size()) {
-			RGLZ_ENGINE_LOG_TRACE_TO(parsed_attributes_log_builder, ":");
-		}
-		for (auto& att : m_default_attributes) {
-			auto parsed_att = m_detected_attributes[att.name()];
-			if (parsed_att != nullptr) {
-				RGLZ_ENGINE_LOG_TRACE_TO(parsed_attributes_log_builder, alignln, "  ", *parsed_att);
-			}
-		}
-		for (auto& att : undeclared_attributes) {
-			RGLZ_ENGINE_LOG_TRACE_TO(parsed_attributes_log_builder, alignln, "  ", att.value);
-		}
-
-		RGLZ_ENGINE_LOG_TRACE_GET(added_attributes_log_builder, n_added_attributes, " added attributes in \"", file_name, "\"");
-		if (n_added_attributes) {
-			RGLZ_ENGINE_LOG_TRACE_TO(added_attributes_log_builder, ":");
-		}
-		for (auto& att : m_default_attributes) {
-			if (m_detected_attributes[att.name()] == nullptr) {
-				RGLZ_ENGINE_LOG_TRACE_TO(added_attributes_log_builder, alignln, "  ", att);
-			}
-		}
+		rebuild();
 	}
 
-	std::optional<std::pair<FixedString<RGLZ_PREFERENCES_ATTRIBUTE_NAME_MAX_LENGTH>, FixedString<RGLZ_PREFERENCES_ATTRIBUTE_RVALUE_MAX_LENGTH>>> Preferences::read_line(std::ifstream& file, std::string_view file_name, std::uint32_t& line_number) {
+	Attribute* Preferences::write_attribute(std::string_view attribute_name, bool value) {
+		Attribute* attribute = m_current_attributes[attribute_name];
+		RGLZ_ASSERT(attribute != nullptr);
+		*(attribute) = value;
+		m_rebuild = true;
+
+		return attribute;
+	}
+
+	Attribute* Preferences::write_attribute(std::string_view attribute_name, double value) {
+		Attribute* attribute = m_current_attributes[attribute_name];
+		RGLZ_ASSERT(attribute != nullptr);
+		*(attribute) = value;
+		m_rebuild = true;
+
+		return attribute;
+	}
+
+
+	Attribute* Preferences::write_attribute(std::string_view attribute_name, const char* value) {
+		Attribute* attribute = m_current_attributes[attribute_name];
+		RGLZ_ASSERT(attribute != nullptr);
+		*(attribute) = value;
+		m_rebuild = true;
+
+		return attribute;
+	}
+
+	Attribute* Preferences::write_attribute(std::string_view attribute_name, std::string_view value) {
+		Attribute* attribute = m_current_attributes[attribute_name];
+		RGLZ_ASSERT(attribute != nullptr);
+		*(attribute) = value;
+		m_rebuild = true;
+
+		return attribute;
+	}
+
+	Attribute* Preferences::write_attribute(std::string_view attribute_name) {
+		Attribute* attribute = m_current_attributes[attribute_name];
+		RGLZ_ASSERT(attribute != nullptr);
+		attribute->set_null();
+		m_rebuild = true;
+
+		return attribute;
+	}
+
+	std::optional<std::pair<FixedString<RGLZ_PREFERENCES_ATTRIBUTE_NAME_MAX_LENGTH>, FixedString<RGLZ_PREFERENCES_ATTRIBUTE_RVALUE_MAX_LENGTH>>> Preferences::read_line(std::ifstream& file, std::string_view m_file_name, std::uint32_t& line_number) {
 		while (!file.eof()) {
 			FixedString<RGLZ_PREFERENCES_ATTRIBUTE_NAME_MAX_LENGTH> attribute_name;
 			FixedString<RGLZ_PREFERENCES_ATTRIBUTE_RVALUE_MAX_LENGTH> attribute_value_string;
@@ -195,11 +156,11 @@ namespace rglz {
 							if (attribute_name.length() == RGLZ_PREFERENCES_ATTRIBUTE_NAME_MAX_LENGTH) {
 								is_invalid_line = true;
 
-								RGLZ_ENGINE_LOG_ERROR("in \"", file_name, "\" at line ", line_number, ": AttributeName \'", attribute_name, "...\' length has exceeded the max length of ", RGLZ_PREFERENCES_ATTRIBUTE_NAME_MAX_LENGTH, " characters");
+								RGLZ_ENGINE_LOG_ERROR("in \"", m_file_name, "\" at line ", line_number, ": AttributeName \'", attribute_name, "...\' length has exceeded the max length of ", RGLZ_PREFERENCES_ATTRIBUTE_NAME_MAX_LENGTH, " characters");
 							}
 							else if (is_space_in_attribute_name) {
 								is_invalid_line = true;
-								RGLZ_ENGINE_LOG_ERROR("in \"", file_name, "\" at line ", line_number, ": Unallowed spaces in AttributeName \'", attribute_name, "...\'");
+								RGLZ_ENGINE_LOG_ERROR("in \"", m_file_name, "\" at line ", line_number, ": Unallowed spaces in AttributeName \'", attribute_name, "...\'");
 							}
 							else {
 								std::string_view current_view(&current_char, 1);
@@ -219,7 +180,7 @@ namespace rglz {
 							if (attribute_value_string.length() == RGLZ_PREFERENCES_ATTRIBUTE_RVALUE_MAX_LENGTH) {
 								is_invalid_line = true;
 
-								RGLZ_ENGINE_LOG_ERROR("in \"", file_name, "\" at line ", line_number, ": AttributeValue \"", attribute_value_string, "...\" of attribute \"", attribute_name, "\" length has exceeded the max length of ", RGLZ_PREFERENCES_ATTRIBUTE_RVALUE_MAX_LENGTH, " characters");
+								RGLZ_ENGINE_LOG_ERROR("in \"", m_file_name, "\" at line ", line_number, ": AttributeValue \"", attribute_value_string, "...\" of attribute \"", attribute_name, "\" length has exceeded the max length of ", RGLZ_PREFERENCES_ATTRIBUTE_RVALUE_MAX_LENGTH, " characters");
 							}
 							else {
 								std::string_view current_view(&current_char, 1);
@@ -250,14 +211,9 @@ namespace rglz {
 			return Attribute(attribute_name);
 		}
 		else if (isdigit(attribute_value_string[0])) {
-			char* end_ptr;
-			if (attribute_value_string.length() == 1 && attribute_value_string[0] == '0') {
-				return Attribute(attribute_name, 0.0);
-			}
-			else if (double result = strtod(attribute_value_string.data(), &end_ptr)) {
-				if (errno != ERANGE && result != 0) {
-					return Attribute(attribute_name, result );
-				}
+			double result;
+			if (std::from_chars(attribute_value_string.data(), attribute_value_string.data() + attribute_value_string.size(), result).ec == std::errc()) {
+				return Attribute(attribute_name, result);
 			}
 		}
 		else if (attribute_value_string[0] == '\"' && attribute_value_string[attribute_value_string.length() - 1] == '\"') {
@@ -274,7 +230,7 @@ namespace rglz {
 
 		switch (attribute.type()) {
 			case AttributeType::Boolean: {
-				bool value = attribute.boolean_value().value();
+				bool value = attribute.boolean_value();
 				if (value) {
 					file << "True";
 				}
@@ -283,10 +239,10 @@ namespace rglz {
 				}
 			} break;
 			case AttributeType::Double: {
-				file << attribute.double_value().value();
+				file << std::fixed << attribute.double_value();
 			} break;
 			case AttributeType::String: {
-				file << "\"" << attribute.string_value().value() << "\"";
+				file << "\"" << static_cast<std::string_view>(attribute.string_value()) << "\"";
 			} break;
 			case AttributeType::Null: {
 				file << "Null";
@@ -294,5 +250,54 @@ namespace rglz {
 		}
 
 		file << std::endl;
+	}
+
+	void Preferences::rebuild() {
+		if (!m_rebuild) {
+			return;
+		}
+
+		m_rebuild = false;
+		std::ofstream file(m_file_name.data());
+		auto undeclared_attributes = m_current_attributes;
+
+		std::size_t n_added_attributes = 0;
+		for (auto& att : m_default_attributes) {
+			auto parsed_att = m_current_attributes[att.name()];
+			if (parsed_att != nullptr) {
+				write_attribute(*parsed_att, file);
+			}
+			else {
+				write_attribute(att, file);
+				++n_added_attributes;
+			}
+			undeclared_attributes.remove(att.name());
+		}
+
+		for (auto& att : undeclared_attributes) {
+			write_attribute(att.value, file);
+		}
+
+		RGLZ_ENGINE_LOG_TRACE_GET(attributes_log_builder, m_current_attributes.size(), " parsed attributes in \"", m_file_name, "\"");
+		if (m_current_attributes.size()) {
+			RGLZ_ENGINE_LOG_TRACE_TO(attributes_log_builder, ":");
+		}
+		for (auto& att : m_default_attributes) {
+			auto* parsed_att = m_current_attributes[att.name()];
+			if (parsed_att != nullptr) {
+				RGLZ_ENGINE_LOG_TRACE_TO(attributes_log_builder, alignln, "  ", *parsed_att);
+			}
+		}
+
+		RGLZ_ENGINE_LOG_TRACE_TO(attributes_log_builder, alignln, n_added_attributes, " added attributes in \"", m_file_name, "\"");
+		if (n_added_attributes) {
+			RGLZ_ENGINE_LOG_TRACE_TO(attributes_log_builder, ":");
+		}
+		for (auto& att : m_default_attributes) {
+			if (m_current_attributes[att.name()] == nullptr) {
+				RGLZ_ENGINE_LOG_TRACE_TO(attributes_log_builder, alignln, "  ", att);
+				m_current_attributes.insert(att.name(), att);
+			}
+		}
 	}
 }

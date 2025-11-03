@@ -87,7 +87,8 @@ namespace rglz {
 			m_file_write_stream.write(d.data, ws.first.get_write_idx());
 			m_stdout_write_stream.write(d.data, ws.first.get_write_idx());
 
-			d = LogBuffer();
+			m_file.flush();
+			d.reset();
 			s = BufferedLogStream(d);
 			ws.first.set_write_idx(0);
 		}

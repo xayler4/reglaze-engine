@@ -90,8 +90,12 @@ namespace rglz {
 			return m_data[index];
 		}
 
-		inline bool operator== (std::string_view str) const {
+		inline bool operator==(std::string_view str) const {
 			return static_cast<std::string_view>(*this) == str;
+		}
+
+		inline bool operator==(const FixedString<UMaxLength>& str) const {
+			return static_cast<std::string_view>(*this) == static_cast<std::string_view>(str);
 		}
 
 		inline FixedString<UMaxLength>& operator += (std::string_view str) {

@@ -9,138 +9,6 @@
 #include <array>
 #include <iostream>
 
-// Engine logger
-
-#if RGLZ_ENGINE_LOGGER_DEBUG_ENABLE == 1
-	#define RGLZ_ENGINE_LOG_DEBUG(...) (::rglz::Engine::log(::rglz::LoggerSeverity::Debug).stream(__VA_ARGS__))
-	#define RGLZ_ENGINE_LOG_DEBUG_GET(log_name, ...) auto log_name = (::rglz::Engine::log(::rglz::LoggerSeverity::Debug).stream( __VA_ARGS__))
-	#define RGLZ_ENGINE_LOG_DEBUG_TO(log_name, ...)	\
-		RGLZ_ENGINE_ASSERT_MSG(log_name.severity() == ::rglz::LoggerSeverity::Debug && log_name.logger() == ::rglz::Engine::logger(), "Log is not owned by engine logger!");	\
-		log_name.stream(__VA_ARGS__);
-#else
-	#define RGLZ_ENGINE_LOG_DEBUG(...)
-	#define RGLZ_ENGINE_LOG_DEBUG_GET(log_name, ...)
-	#define RGLZ_ENGINE_LOG_DEBUG_TO(log_name, ...)
-#endif
-
-#if RGLZ_ENGINE_LOGGER_TRACE_ENABLE == 1
-	#define RGLZ_ENGINE_LOG_TRACE(...) (::rglz::Engine::log(::rglz::LoggerSeverity::Trace).stream(__VA_ARGS__))
-	#define RGLZ_ENGINE_LOG_TRACE_GET(log_name, ...) auto log_name = (::rglz::Engine::log(::rglz::LoggerSeverity::Trace).stream( __VA_ARGS__))
-	#define RGLZ_ENGINE_LOG_TRACE_TO(log_name, ...)	\
-		RGLZ_ENGINE_ASSERT_MSG(log_name.severity() == ::rglz::LoggerSeverity::Trace && log_name.logger() == ::rglz::Engine::logger(), "Log is not owned by engine logger!");	\
-		log_name.stream(__VA_ARGS__);
-#else
-	#define RGLZ_ENGINE_LOG_TRACE(...)
-	#define RGLZ_ENGINE_LOG_TRACE_GET(log_name, ...)
-	#define RGLZ_ENGINE_LOG_TRACE_TO(log_name, ...)
-#endif
-	
-#if RGLZ_ENGINE_LOGGER_INFO_ENABLE == 1
-	#define RGLZ_ENGINE_LOG_INFO(...) (::rglz::Engine::log(::rglz::LoggerSeverity::Info).stream(__VA_ARGS__))
-	#define RGLZ_ENGINE_LOG_INFO_GET(log_name, ...) auto log_name = (::rglz::Engine::log(::rglz::LoggerSeverity::Info).stream( __VA_ARGS__))
-	#define RGLZ_ENGINE_LOG_INFO_TO(log_name, ...)	\
-		RGLZ_ENGINE_ASSERT_MSG(log_name.severity() == ::rglz::LoggerSeverity::Info && log_name.logger() == ::rglz::Engine::logger(), "Log is not owned by engine logger!");	\
-		log_name.stream(__VA_ARGS__);
-#else
-	#define RGLZ_ENGINE_LOG_INFO(...)
-	#define RGLZ_ENGINE_LOG_INFO_GET(log_name, ...)
-	#define RGLZ_ENGINE_LOG_INFO_TO(log_name, ...)
-#endif
-	
-#if RGLZ_ENGINE_LOGGER_WARN_ENABLE == 1
-	#define RGLZ_ENGINE_LOG_WARN(...) (::rglz::Engine::log(::rglz::LoggerSeverity::Warn).stream(__VA_ARGS__))
-	#define RGLZ_ENGINE_LOG_WARN_GET(log_name, ...) auto log_name = (::rglz::Engine::log(::rglz::LoggerSeverity::Warn).stream( __VA_ARGS__))
-	#define RGLZ_ENGINE_LOG_WARN_TO(log_name, ...)	\
-		RGLZ_ENGINE_ASSERT_MSG(log_name.severity() == ::rglz::LoggerSeverity::Warn && log_name.logger() == ::rglz::Engine::logger(), "Log is not owned by engine logger!");	\
-		log_name.stream(__VA_ARGS__);
-#else
-	#define RGLZ_ENGINE_LOG_WARN(...)
-	#define RGLZ_ENGINE_LOG_WARN_GET(log_name, ...)
-	#define RGLZ_ENGINE_LOG_WARN_TO(log_name, ...)
-#endif
-	
-#if RGLZ_ENGINE_LOGGER_ERROR_ENABLE == 1
-	#define RGLZ_ENGINE_LOG_ERROR(...) (::rglz::Engine::log(::rglz::LoggerSeverity::Error).stream(__VA_ARGS__))
-	#define RGLZ_ENGINE_LOG_ERROR_GET(log_name, ...) auto log_name = (::rglz::Engine::log(::rglz::LoggerSeverity::Error).stream( __VA_ARGS__))
-	#define RGLZ_ENGINE_LOG_ERROR_TO(log_name, ...)	\
-		RGLZ_ENGINE_ASSERT_MSG(log_name.severity() == ::rglz::LoggerSeverity::Info && log_name.logger() == ::rglz::Engine::logger(), "Log is not owned by engine logger!");	\
-		log_name.stream(__VA_ARGS__);
-#else
-	#define RGLZ_ENGINE_LOG_ERROR(...)
-	#define RGLZ_ENGINE_LOG_ERROR_GET(log_name, ...)
-	#define RGLZ_ENGINE_LOG_ERROR_TO(log_name, ...)
-#endif
-
-// App logger
-
-#if RGLZ_LOGGER_DEBUG_ENABLE == 1
-	#define RGLZ_LOG_DEBUG(...) (::rglz::Engine::app().log(::rglz::LoggerSeverity::Debug).stream(__VA_ARGS__))
-	#define RGLZ_LOG_DEBUG_GET(log_name, ...) auto log_name = (::rglz::Engine::app().log(::rglz::LoggerSeverity::Debug).stream( __VA_ARGS__))
-	#define RGLZ_LOG_DEBUG_TO(log_name, ...)	\
-		RGLZ_ASSERT_MSG(log_name.severity() == ::rglz::LoggerSeverity::Debug && log_name.logger() == &::rglz::Engine::app(), "Log is not owned by app logger!");	\
-		::rglz::Engine::app().flush_logs();	\
-		log_name.stream(__VA_ARGS__)
-#else
-	#define RGLZ_LOG_DEBUG(...)
-	#define RGLZ_LOG_DEBUG_GET(log_name, ...)
-	#define RGLZ_LOG_DEBUG_TO(log_name, ...)
-#endif
-
-
-#if RGLZ_LOGGER_TRACE_ENABLE == 1
-	#define RGLZ_LOG_TRACE(...) (::rglz::Engine::app().log(::rglz::LoggerSeverity::Trace).stream(__VA_ARGS__))
-	#define RGLZ_LOG_TRACE_GET(log_name, ...) auto log_name = (::rglz::Engine::app().log(::rglz::LoggerSeverity::Trace).stream( __VA_ARGS__))
-	#define RGLZ_LOG_TRACE_TO(log_name, ...)	\
-		RGLZ_ASSERT_MSG(log_name.severity() == ::rglz::LoggerSeverity::Trace && log_name.logger() == &::rglz::Engine::app(), "Log is not owned by app logger!");	\
-		::rglz::Engine::app().flush_logs();	\
-		log_name.stream(__VA_ARGS__)
-#else
-	#define RGLZ_LOG_TRACE(...)
-	#define RGLZ_LOG_TRACE_GET(log_name, ...)
-	#define RGLZ_LOG_TRACE_TO(log_name, ...)
-#endif
-	
-
-#if RGLZ_LOGGER_INFO_ENABLE == 1
-	#define RGLZ_LOG_INFO(...) (::rglz::Engine::app().log(::rglz::LoggerSeverity::Info).stream(__VA_ARGS__))
-	#define RGLZ_LOG_INFO_GET(log_name, ...) auto log_name = (::rglz::Engine::app().log(::rglz::LoggerSeverity::Info).stream( __VA_ARGS__))
-	#define RGLZ_LOG_INFO_TO(log_name, ...)	\
-		RGLZ_ASSERT_MSG(log_name.severity() == ::rglz::LoggerSeverity::Info && log_name.logger() == &::rglz::Engine::app(), "Log is not owned by app logger!");	\
-		::rglz::Engine::app().flush_logs();	\
-		log_name.stream(__VA_ARGS__)
-#else
-	#define RGLZ_LOG_INFO(...)
-	#define RGLZ_LOG_INFO_GET(log_name, ...)
-	#define RGLZ_LOG_INFO_TO(log_name, ...)
-#endif
-
-#if RGLZ_LOGGER_WARN_ENABLE == 1
-	#define RGLZ_LOG_WARN(...) (::rglz::Engine::app().log(::rglz::LoggerSeverity::Warn).stream(__VA_ARGS__))
-	#define RGLZ_LOG_WARN_GET(log_name, ...) auto log_name = (::rglz::Engine::app().log(::rglz::LoggerSeverity::Warn).stream( __VA_ARGS__))
-	#define RGLZ_LOG_WARN_TO(log_name, ...)	\
-		RGLZ_ASSERT_MSG(log_name.severity() == ::rglz::LoggerSeverity::Warn && log_name.logger() == &::rglz::Engine::app(), "Log is not owned by app logger!");	\
-		::rglz::Engine::app().flush_logs();	\
-		log_name.stream(__VA_ARGS__)
-#else
-	#define RGLZ_LOG_WARN(...)
-	#define RGLZ_LOG_WARN_GET(log_name, ...)
-	#define RGLZ_LOG_WARN_TO(log_name, ...)
-#endif
-	
-#if RGLZ_LOGGER_ERROR_ENABLE == 1
-	#define RGLZ_LOG_ERROR(...) (::rglz::Engine::app().log(::rglz::LoggerSeverity::Error).stream(__VA_ARGS__))
-	#define RGLZ_LOG_ERROR_GET(log_name, ...) auto log_name = (::rglz::Engine::app().log(::rglz::LoggerSeverity::Error).stream( __VA_ARGS__))
-	#define RGLZ_LOG_ERROR_TO(log_name, ...)	\
-		RGLZ_ASSERT_MSG(log_name.severity() == ::rglz::LoggerSeverity::Error && log_name.logger() == &::rglz::Engine::app(), "Log is not owned by app logger!");	\
-		::rglz::Engine::app().flush_logs();	\
-		log_name.stream(__VA_ARGS__)
-#else
-	#define RGLZ_LOG_ERROR(...)
-	#define RGLZ_LOG_ERROR_GET(log_name, ...)
-	#define RGLZ_LOG_ERROR_TO(log_name, ...)
-#endif
-
-
 namespace rglz {
 
 	class LogBuffer {
@@ -149,12 +17,16 @@ namespace rglz {
 
 		void grow(std::size_t required_size_delta);
 
+		void reset();
+
+		LogBuffer(const LogBuffer&) = delete;
+		LogBuffer& operator =(const LogBuffer&) = delete;
 	public:
 		std::uint8_t* data;
 		std::size_t size;
 
 	private:
-		std::uint8_t m_fixed_data[512];
+		std::uint8_t m_fixed_data[RGLZ_LOGGER_LOG_PREALLOCATED_LENGTH];
 	};
 
 	class BufferedLogStream : public esr::Stream<BufferedLogStream> {

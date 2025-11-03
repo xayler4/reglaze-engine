@@ -12,6 +12,8 @@ namespace rglz {
 			MemoryBlock(MemoryBlock&& memory_block);
 			~MemoryBlock();
 
+			void realloc(std::size_t size);
+
 			inline std::uint8_t* data() {
 				return m_memory;
 			}

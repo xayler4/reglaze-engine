@@ -2,6 +2,7 @@
 #define RGLZ_MEMORY_MEMORY_MANAGER_H
 
 #include "pch.h"
+#include "core/memory_profile.h"
 #include "memory/memory_block.h"
 #include "memory/stack_allocator.h"
 
@@ -15,7 +16,7 @@ namespace rglz {
 		public:
 			MemoryManager() = delete;
 
-			static void startup(MemoryBlock& memory_block, const std::uint8_t stack_allocator_size_percentage, const std::uint8_t single_frame_allocator_size_percentage);
+			static void startup(MemoryBlock& memory_block, const MemoryProfile& memory_profile);
 			static void update();
 			static void shutdown();
 

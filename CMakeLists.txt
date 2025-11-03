@@ -29,6 +29,7 @@ set(
 	${INCLUDE_DIR}/core/engine.h
 	${INCLUDE_DIR}/core/logger.h
 	${INCLUDE_DIR}/core/logger.tpp
+	${INCLUDE_DIR}/core/attribute.h
 	${INCLUDE_DIR}/core/preferences.h
 	${INCLUDE_DIR}/containers/fixed_string.h
 )
@@ -43,6 +44,7 @@ set(
 	${SRC_DIR}/core/logger.cpp
 	${SRC_DIR}/core/application.cpp
 	${SRC_DIR}/core/engine.cpp
+	${SRC_DIR}/core/attribute.cpp
 	${SRC_DIR}/core/preferences.cpp
 	${SRC_DIR}/containers/to_hash.cpp
 	${SRC_DIR}/memory/memory_manager.cpp

@@ -1,5 +1,4 @@
 #include "pch.h"
-#include "core/engine.h"
 
 namespace rglz {
 	void report_engine_assertion_failure(std::string_view expr, std::string_view msg, std::uint32_t line, std::string_view file_name) {
