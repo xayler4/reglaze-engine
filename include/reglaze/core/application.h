@@ -4,11 +4,14 @@
 #include "base.h"
 #include "core/logger.h"
 #include "core/preferences.h"
+#include "core/scene.h"
 
 namespace rglz {
 	class Engine;
 
-	class Application : public Logger<RGLZ_LOGGER_LOG_MAX_CUNCURRENT_LOGS> {
+	class Application : 
+		public Logger<RGLZ_LOGGER_LOG_MAX_CUNCURRENT_LOGS>,
+		public SceneStack {
 	public:
 		Application(std::string_view file_name = "app_log_latest.txt", std::string_view logger_name = "APP");
 		virtual ~Application();

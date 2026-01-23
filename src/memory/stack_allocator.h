@@ -9,14 +9,13 @@ namespace rglz {
 		public:
 			class Marker {
 			public:
-				inline operator std::uint8_t*() const {
-					return m_ptr;
-				}
-
-			private:
 				Marker(std::uint8_t* ptr) 
 					: m_ptr(ptr) 
 				{}
+
+				inline operator std::uint8_t*() const {
+					return m_ptr;
+				}
 
 			private:
 				std::uint8_t* m_ptr;
@@ -34,6 +33,17 @@ namespace rglz {
 			template<typename T = std::uint8_t>
 			T* allocate(std::size_t n) {
 				std::uintptr_t rest = reinterpret_cast<uintptr_t>(static_cast<uint8_t*>(m_marker)) % alignof(T);
+
+				RGLZ_ENGINE_ASSERT((m_marker + n + rest) - m_memory <= m_size);
+
+				Marker previous_marker(m_marker + rest);
+				m_marker = Marker(previous_marker + n);
+
+				return previous_marker;
+			}
+
+			std::uint8_t* allocate(std::size_t n, std::size_t alignment) {
+				std::uintptr_t rest = reinterpret_cast<uintptr_t>(static_cast<uint8_t*>(m_marker)) % alignment;
 
 				RGLZ_ENGINE_ASSERT((m_marker + n + rest) - m_memory <= m_size);
 

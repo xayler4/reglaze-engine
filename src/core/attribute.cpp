@@ -18,7 +18,7 @@ namespace rglz {
 
 	Attribute::Attribute(std::string_view name, double value)
 		: m_name(name)
-		, m_value(value)
+		, m_value(static_cast<float>(value))
 
 	{
 		RGLZ_ASSERT_MSG(is_string_valid(name), "Attribute string must contain only alphanumeric characters or spaces!");

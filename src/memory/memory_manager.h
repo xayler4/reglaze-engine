@@ -16,12 +16,16 @@ namespace rglz {
 		public:
 			MemoryManager() = delete;
 
-			static void startup(MemoryBlock& memory_block, const MemoryProfile& memory_profile);
+			static void startup(MemoryBlock& memory_block, const MemoryProfile& memory_profile, std::string_view name);
 			static void update();
 			static void shutdown();
 
 			inline static StackAllocator& stack_allocator() {
 				return s_stack_allocator;
+			}
+
+			inline static StackAllocator& scene_stack_allocator() {
+				return s_scene_stack_allocator;
 			}
 
 			inline static StackAllocator& single_frame_allocator() {
@@ -31,6 +35,7 @@ namespace rglz {
 		private:
 			static StackAllocator s_stack_allocator;
 			static StackAllocator s_single_frame_allocator;
+			static StackAllocator s_scene_stack_allocator;
 		};
 	}
 }

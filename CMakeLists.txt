@@ -31,6 +31,7 @@ set(
 	${INCLUDE_DIR}/core/logger.tpp
 	${INCLUDE_DIR}/core/attribute.h
 	${INCLUDE_DIR}/core/preferences.h
+	${INCLUDE_DIR}/core/scene.h
 	${INCLUDE_DIR}/containers/fixed_string.h
 )
 
@@ -46,6 +47,7 @@ set(
 	${SRC_DIR}/core/engine.cpp
 	${SRC_DIR}/core/attribute.cpp
 	${SRC_DIR}/core/preferences.cpp
+	${SRC_DIR}/core/scene.cpp
 	${SRC_DIR}/containers/to_hash.cpp
 	${SRC_DIR}/memory/memory_manager.cpp
 	${SRC_DIR}/memory/memory_block.cpp

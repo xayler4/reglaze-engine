@@ -246,6 +246,44 @@ ESR_REGISTER_PROC_W("Logger", bool, b, stream,
 	})
 );
 
+namespace rglz {
+
+	union PointerBytes {
+	public:
+		PointerBytes(void* ptr)
+			: raw_ptr(ptr) {}
+
+		void* raw_ptr;
+		std::uint8_t bytes[sizeof(void*)];
+	};
+}
+
+template<typename T>
+concept Pointer = (std::is_pointer_v<T>) && !std::is_same_v<T, bool>;
+
+template<Pointer T, ESR_REGISTRY_PARAMS>
+ESR_REGISTER_PROC_W("Logger", T, v, stream, 
+	ESR_PACK({
+		static char hex_map[17] = "0123456789ABCDEF";
+		const std::uint8_t size = sizeof(void*) * 2 + 2;
+		char hex[size];
+		hex[0] = '0';
+		hex[1] = 'x';
+
+		::rglz::PointerBytes ptr_bytes(v);
+		std::uint8_t hex_index = 2;
+
+		for (std::uint8_t i = 0; i < sizeof(void*); i++) {
+			hex[hex_index] = hex_map[ptr_bytes.bytes[i] % 16];
+			hex[hex_index + 1] = hex_map[ptr_bytes.bytes[i] / 16 % 16];
+			hex_index += 2;	
+		}
+
+		std::string_view str(hex, size);
+		stream << str;
+	})
+);
+
 template<typename T>
 concept Number = (std::is_arithmetic_v<T> && !std::is_same_v<std::remove_cvref_t<T>, char>);
 

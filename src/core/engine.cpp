@@ -19,15 +19,15 @@ namespace rglz {
 	}
 
 	void Engine::run() {
-		memory::MemoryManager::update();
 		if (s_app->m_preferences.has_value()) {
 			s_app->m_preferences.value().rebuild();
 		}
 		s_logger.flush_logs();
 		s_app->flush_logs();
+		memory::MemoryManager::update();
 	}
 
-	void* Engine::internal_allocate(std::size_t size) {
-		return memory::MemoryManager::stack_allocator().allocate(size);
+	void* Engine::internal_allocate(std::size_t size, std::size_t alignment) {
+		return memory::MemoryManager::stack_allocator().allocate(size, alignment);
 	}
 }

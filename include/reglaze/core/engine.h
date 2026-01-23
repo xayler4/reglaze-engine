@@ -164,7 +164,7 @@ namespace rglz {
 
 		template<typename TApplication, typename = std::enable_if_t<std::is_base_of_v<Application, TApplication>>> 
 		static void register_client_app() {
-			void* raw_app = internal_allocate(sizeof(TApplication));
+			void* raw_app = internal_allocate(sizeof(TApplication), alignof(TApplication));
 			s_app = static_cast<TApplication*>(raw_app);
 			std::construct_at(static_cast<TApplication*>(raw_app));
 		}
@@ -194,7 +194,7 @@ namespace rglz {
 	private:
 		Engine(const Preferences& preferences);
 
-		static void* internal_allocate(std::size_t size);
+		static void* internal_allocate(std::size_t size, std::size_t alignment);
 
 	private:
 		static LoggerType s_logger;

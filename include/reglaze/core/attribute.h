@@ -8,7 +8,7 @@
 namespace rglz {
 	enum class AttributeType {
 		Boolean,
-		Double,
+		Float,
 		String,
 		Null
 	};
@@ -16,7 +16,7 @@ namespace rglz {
 	class Attribute {
 	public:
 		using Null = std::nullptr_t;
-		using Value = std::variant<bool, double, rglz::FixedString<RGLZ_PREFERENCES_ATTRIBUTE_RVALUE_MAX_LENGTH>, Null>;
+		using Value = std::variant<bool, float, rglz::FixedString<RGLZ_PREFERENCES_ATTRIBUTE_RVALUE_MAX_LENGTH>, Null>;
 
 	public:
 		Attribute();
@@ -32,8 +32,8 @@ namespace rglz {
 			if (std::holds_alternative<bool>(m_value)) {
 				return AttributeType::Boolean;
 			}
-			else if (std::holds_alternative<double>(m_value)) {
-				return AttributeType::Double;
+			else if (std::holds_alternative<float>(m_value)) {
+				return AttributeType::Float;
 			}
 			else if (std::holds_alternative<rglz::FixedString<RGLZ_PREFERENCES_ATTRIBUTE_RVALUE_MAX_LENGTH>>(m_value)) {
 				return AttributeType::String;
@@ -52,9 +52,9 @@ namespace rglz {
 			return std::get<bool>(m_value);
 		}
 
-		inline double& double_value() {
-			RGLZ_ASSERT(std::holds_alternative<double>(m_value));
-			return std::get<double>(m_value);
+		inline float& float_value() {
+			RGLZ_ASSERT(std::holds_alternative<float>(m_value));
+			return std::get<float>(m_value);
 		}
 
 		inline FixedString<RGLZ_PREFERENCES_ATTRIBUTE_RVALUE_MAX_LENGTH>& string_value() {
@@ -68,9 +68,9 @@ namespace rglz {
 			return std::get<bool>(m_value);
 		}
 
-		inline double double_value() const {
-			RGLZ_ASSERT(std::holds_alternative<double>(m_value));
-			return std::get<double>(m_value);
+		inline float float_value() const {
+			RGLZ_ASSERT(std::holds_alternative<float>(m_value));
+			return std::get<float>(m_value);
 		}
 
 		inline const FixedString<RGLZ_PREFERENCES_ATTRIBUTE_RVALUE_MAX_LENGTH>& string_value() const {
@@ -89,7 +89,7 @@ namespace rglz {
 			return *this;
 		}
 		inline Attribute& operator= (double value) {
-			m_value = value;
+			m_value = static_cast<float>(value);
 
 			return *this;
 		}
@@ -130,8 +130,8 @@ ESR_REGISTER_PROC_W("Logger", rglz::Attribute, attr, stream,
 			case rglz::AttributeType::Boolean: {
 				stream << "AttributeValue: " << attr.boolean_value() << ", AttributeType: Boolean";
 			} break;
-			case rglz::AttributeType::Double: {
-				stream << "AttributeValue: " << attr.double_value() << ", AttributeType: Double";
+			case rglz::AttributeType::Float: {
+				stream << "AttributeValue: " << attr.float_value() << ", AttributeType: Float";
 			} break;
 			case rglz::AttributeType::String: {
 				stream << "AttributeValue: \"" << attr.string_value() << '\"' << ", AttributeType: String";

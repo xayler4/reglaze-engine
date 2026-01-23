@@ -80,10 +80,10 @@ namespace rglz {
 			m_size = size;
 		} 
 
-		void extend(std::size_t size) {
-			m_size = size;
-
+		void resize(std::size_t size) {
 			RGLZ_ENGINE_ASSERT(m_size < size);
+
+			m_size = size;
 		}
 
 		inline std::size_t size() const {

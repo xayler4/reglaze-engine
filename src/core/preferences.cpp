@@ -211,7 +211,7 @@ namespace rglz {
 			return Attribute(attribute_name);
 		}
 		else if (isdigit(attribute_value_string[0])) {
-			double result;
+			float result;
 			if (std::from_chars(attribute_value_string.data(), attribute_value_string.data() + attribute_value_string.size(), result).ec == std::errc()) {
 				return Attribute(attribute_name, result);
 			}
@@ -238,8 +238,39 @@ namespace rglz {
 					file << "False";
 				}
 			} break;
-			case AttributeType::Double: {
-				file << std::fixed << attribute.double_value();
+			case AttributeType::Float: {
+				rglz::FixedVector<char, 32> double_string;
+				double_string.resize(32);
+				snprintf(double_string.data(), double_string.size(),"%.9f", attribute.float_value());
+				bool decimal_dot_found = false;
+				std::uint8_t last_decimal_zero = 0;
+				for (std::uint8_t i = 0; i < double_string.size(); i++) {
+					char c = double_string[i];
+					if (decimal_dot_found) {
+						if (last_decimal_zero && c == '\0') {
+							if (double_string[last_decimal_zero - 1] == '.') {
+								double_string[last_decimal_zero + 1] = '\0';
+							}
+							else {
+								double_string[last_decimal_zero] = '\0';
+							}
+							break;
+						} 
+						else if (c == '0') {
+							if (!last_decimal_zero) {
+								last_decimal_zero = i;
+							}
+						}
+						else {
+							last_decimal_zero = 0;
+						}
+					}
+					else if (c == '.') {
+						decimal_dot_found = true;
+					}
+				}
+
+				file << double_string.data();
 			} break;
 			case AttributeType::String: {
 				file << "\"" << static_cast<std::string_view>(attribute.string_value()) << "\"";

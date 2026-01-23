@@ -1,7 +1,15 @@
 #include "reglaze.h"
-#include <iostream>
 
 using namespace rglz;
+
+class CustomScene : public Scene {
+public:
+	CustomScene() {
+	}
+
+	~CustomScene() override {
+	}
+};
 
 class App : public Application {
 public:
@@ -23,6 +31,12 @@ public:
 		write_attribute("abcde", "hey there");
 		write_attribute("abcd", "well this is getting boring");
 		write_attribute("abcdef", 132831.231);
+
+		SceneMarker<CustomScene> scene = emplace_scene_stack<CustomScene>();
+		SceneMarker<CustomScene> scene1 = emplace_scene_stack<CustomScene>();
+		SceneMarker<CustomScene> scene2 = emplace_scene_stack<CustomScene>();
+
+		reset_scene_stack_at_marker(scene);
 	}
 
 	~App() {
@@ -45,8 +59,9 @@ RGLZ_DEFAULT_APP_MEMORY_PROFILE({
 	MemoryProfile profile;	
 
 	profile.allocation_size = 320000;
-	profile.stack_allocator_allocation_size_percent = 70.0;
-	profile.single_frame_allocator_allocation_size_percent = 30.0;
+	profile.stack_allocator_allocation_size_percent = 50.0;
+	profile.scene_stack_allocator_allocation_size_percent = 40.0;
+	profile.single_frame_allocator_allocation_size_percent = 10.0;
 
 	return profile;
 });
