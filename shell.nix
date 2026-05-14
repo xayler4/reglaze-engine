@@ -24,7 +24,13 @@ pkgs.mkShell {
 		pkgs.boost
 		easerlib
 	];
-	
-	# shellHook = ''
-	# '';
+  	shellHook = ''
+  		CLANG_PATH=$(which clang)
+
+  		cat <<EOF > .clangd
+CompileFlags:
+	Add: [ "-resource-dir=$CLANG_PATH" ]
+EOF
+  		echo "Generated .clangd with path: $CLANG_PATH"
+  	'';
 }

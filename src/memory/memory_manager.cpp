@@ -3,13 +3,13 @@
 
 namespace rglz {
 	namespace memory {
-		StackAllocator MemoryManager::s_stack_allocator(nullptr, 0);
+		StackAllocator MemoryManager::s_core_allocator(nullptr, 0);
 		StackAllocator MemoryManager::s_scene_stack_allocator(nullptr, 0);
 		StackAllocator MemoryManager::s_single_frame_allocator(nullptr, 0);
 		
 		void MemoryManager::startup(MemoryBlock& memory_block, const MemoryProfile& memory_profile, std::string_view name) {
 			std::size_t allocation_size = memory_profile.allocation_size;
-			double stack_allocator_allocation_size_percent = memory_profile.stack_allocator_allocation_size_percent;
+			double stack_allocator_allocation_size_percent = memory_profile.core_stack_allocator_allocation_size_percent;
 			double scene_stack_allocator_allocation_size_percent = memory_profile.scene_stack_allocator_allocation_size_percent;
 			double single_frame_allocator_allocation_size_percent = memory_profile.single_frame_allocator_allocation_size_percent;
 			std::optional<std::size_t> stack_allocator_max_allocation_size = memory_profile.stack_allocator_max_allocation_size;
@@ -60,11 +60,11 @@ namespace rglz {
 				);
 			}
 
-			s_stack_allocator = StackAllocator(stack_allocator_data, stack_size);
+			s_core_allocator = StackAllocator(stack_allocator_data, stack_size);
 			s_scene_stack_allocator = StackAllocator(scene_stack_allocator_data, scene_stack_size);
 			s_single_frame_allocator = StackAllocator(single_frame_allocator_data, single_frame_size);
 			
-			RGLZ_ENGINE_LOG_TRACE(name, " Total Allocated Size: ", allocation_size, alignln, name, " Stack Allocator Allocated Size: ", stack_size, alignln, name, " Scene Stack Allocator Allocated Size: ", scene_stack_size, alignln, name, " Single Frame Allocator Allocated Size: ", single_frame_size);
+			RGLZ_ENGINE_LOG_TRACE(name, " - Total allocated size: ", allocation_size, alignln, name, " - Core stack allocator allocated size: ", stack_size, alignln, name, " - Scene stack allocator allocated size: ", scene_stack_size, alignln, name, " - Single frame allocator allocated size: ", single_frame_size);
 		}
 
 		void MemoryManager::update() {

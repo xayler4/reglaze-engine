@@ -21,7 +21,7 @@ namespace rglz {
 			static void shutdown();
 
 			inline static StackAllocator& stack_allocator() {
-				return s_stack_allocator;
+				return s_core_allocator;
 			}
 
 			inline static StackAllocator& scene_stack_allocator() {
@@ -33,7 +33,7 @@ namespace rglz {
 			}
 
 		private:
-			static StackAllocator s_stack_allocator;
+			static StackAllocator s_core_allocator;
 			static StackAllocator s_single_frame_allocator;
 			static StackAllocator s_scene_stack_allocator;
 		};

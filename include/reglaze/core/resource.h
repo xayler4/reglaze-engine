@@ -25,6 +25,8 @@ namespace rglz {
 	private:
 
 	};
+
+	class Resource
 }
 
 #endif	// RGLZ_RESOURCE_H

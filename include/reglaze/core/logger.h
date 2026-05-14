@@ -264,7 +264,7 @@ concept Pointer = (std::is_pointer_v<T>) && !std::is_same_v<T, bool>;
 template<Pointer T, ESR_REGISTRY_PARAMS>
 ESR_REGISTER_PROC_W("Logger", T, v, stream, 
 	ESR_PACK({
-		static char hex_map[17] = "0123456789ABCDEF";
+		const char hex_map[17] = "0123456789ABCDEF";
 		const std::uint8_t size = sizeof(void*) * 2 + 2;
 		char hex[size];
 		hex[0] = '0';

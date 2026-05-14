@@ -20,7 +20,7 @@ rglz::MemoryProfile preferences_memory_profile(const rglz::Preferences& pref);
 int main(int argc, const char** argv) {
 	rglz::MemoryProfile tmp_memory_profile;
 	tmp_memory_profile.allocation_size = 8000;
-	tmp_memory_profile.stack_allocator_allocation_size_percent = 0;
+	tmp_memory_profile.core_stack_allocator_allocation_size_percent = 0;
 	tmp_memory_profile.scene_stack_allocator_allocation_size_percent = 0;
 	tmp_memory_profile.single_frame_allocator_allocation_size_percent = 100;
 
@@ -29,14 +29,14 @@ int main(int argc, const char** argv) {
 		return BAD_ALLOC;
 	}
 
-	rglz::memory::MemoryManager::startup(memory_block, tmp_memory_profile, "Temporary");
+	rglz::memory::MemoryManager::startup(memory_block, tmp_memory_profile, "Bootstrap MemoryManager");
 
 	rglz::MemoryProfile app_memory_profile = rglz::default_app_memory_profile();
 
 	rglz::Attribute default_app_memory_profile_stack_allocator_max_allocation_size_attribute = 
 		app_memory_profile.stack_allocator_max_allocation_size.has_value()
-			? rglz::Attribute("MemoryProfileStackAllocatorMaxAllocationSize", static_cast<double>(app_memory_profile.stack_allocator_max_allocation_size.value()))
-			: rglz::Attribute("MemoryProfileStackAllocatorMaxAllocationSize");
+			? rglz::Attribute("MemoryProfileCoreStackAllocatorMaxAllocationSize", static_cast<double>(app_memory_profile.stack_allocator_max_allocation_size.value()))
+			: rglz::Attribute("MemoryProfileCoreStackAllocatorMaxAllocationSize");
 
 	rglz::Attribute default_app_memory_profile_scene_stack_allocator_max_allocation_size_attribute = 
 		app_memory_profile.scene_stack_allocator_max_allocation_size.has_value()
@@ -51,7 +51,7 @@ int main(int argc, const char** argv) {
 	{
 		rglz::Preferences engine_preferences("rglz_engine_options.cfg", {
 			rglz::Attribute("MemoryProfileAllocationSize", static_cast<double>(app_memory_profile.allocation_size)),
-			rglz::Attribute("MemoryProfileStackAllocatorAllocationSizePercent", app_memory_profile.stack_allocator_allocation_size_percent),
+			rglz::Attribute("MemoryProfileCoreStackAllocatorAllocationSizePercent", app_memory_profile.core_stack_allocator_allocation_size_percent),
 			rglz::Attribute("MemoryProfileSceneStackAllocatorAllocationSizePercent", app_memory_profile.scene_stack_allocator_allocation_size_percent),
 			rglz::Attribute("MemoryProfileSingleFrameAllocatorAllocationSizePercent", app_memory_profile.single_frame_allocator_allocation_size_percent),
 			default_app_memory_profile_stack_allocator_max_allocation_size_attribute,
@@ -70,7 +70,7 @@ int main(int argc, const char** argv) {
 		return BAD_ALLOC;
 	}
 
-	rglz::memory::MemoryManager::startup(memory_block, app_memory_profile, "");
+	rglz::memory::MemoryManager::startup(memory_block, app_memory_profile, "MemoryManager");
 
 	try {
 		rglz::register_client_app();
@@ -92,12 +92,12 @@ int main(int argc, const char** argv) {
 
 rglz::MemoryProfile preferences_memory_profile(const rglz::Preferences& preferences) {
 	rglz::MemoryProfile out_memory_profile;
-	rglz::Attribute memory_profile_stack_allocator_max_allocation_size_attribute = *preferences["MemoryProfileStackAllocatorMaxAllocationSize"];
+	rglz::Attribute memory_profile_stack_allocator_max_allocation_size_attribute = *preferences["MemoryProfileCoreStackAllocatorMaxAllocationSize"];
 	rglz::Attribute memory_profile_scene_stack_allocator_max_allocation_size_attribute = *preferences["MemoryProfileSceneStackAllocatorMaxAllocationSize"];
 	rglz::Attribute memory_profile_single_frame_allocator_max_allocation_size_attribute = *preferences["MemoryProfileSingleFrameAllocatorMaxAllocationSize"];
 
 	out_memory_profile.allocation_size = static_cast<std::size_t>(preferences["MemoryProfileAllocationSize"]->float_value());
-	out_memory_profile.stack_allocator_allocation_size_percent = preferences["MemoryProfileStackAllocatorAllocationSizePercent"]->float_value();
+	out_memory_profile.core_stack_allocator_allocation_size_percent = preferences["MemoryProfileCoreStackAllocatorAllocationSizePercent"]->float_value();
 	out_memory_profile.scene_stack_allocator_allocation_size_percent = preferences["MemoryProfileSceneStackAllocatorAllocationSizePercent"]->float_value();
 	out_memory_profile.single_frame_allocator_allocation_size_percent = preferences["MemoryProfileSingleFrameAllocatorAllocationSizePercent"]->float_value();
 

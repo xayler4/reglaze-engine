@@ -1,9 +1,13 @@
 #include "pch.h"
 #include "core/application.h"
 #include "containers/fixed_hash_map.h"
+#include "memory/memory_manager.h"
 
 namespace rglz {
-	Application::Application(std::string_view file_name, std::string_view logger_name) : Logger(file_name, logger_name) {
+	Application::Application(std::string_view file_name, std::string_view logger_name) 
+		: Logger(file_name, logger_name),
+		m_is_running(true)
+	{
 	}
 
 	Application::~Application() {
@@ -16,16 +20,20 @@ namespace rglz {
 	void Application::on_shutdown() {
 	}
 
-	void Application::on_attribute_read(const Attribute& attribute) {
-
+	bool Application::on_attribute_read(const Attribute& attribute) {
+		return false;
 	}
 
-	void Application::on_attribute_write(const Attribute& attribute) {
-
+	bool Application::on_attribute_write(const Attribute& attribute) {
+		return false;
 	}
 
 	void Application::set_preferences(const Preferences& prefs) {
 		m_preferences = prefs;
+	}
+
+	void* Application::internal_allocate(std::size_t size, std::size_t alignment) {
+		return memory::MemoryManager::stack_allocator().allocate(size, alignment);
 	}
 
 	void Application::write_attribute(std::string_view attribute_name, bool value) {

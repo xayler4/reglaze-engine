@@ -4,7 +4,7 @@
 namespace rglz {
 	struct MemoryProfile {
 		std::size_t allocation_size = 32000;
-		float stack_allocator_allocation_size_percent = 50;
+		float core_stack_allocator_allocation_size_percent = 50;
 		float scene_stack_allocator_allocation_size_percent = 40;
 		float single_frame_allocator_allocation_size_percent = 10;
 		std::optional<std::size_t> stack_allocator_max_allocation_size;

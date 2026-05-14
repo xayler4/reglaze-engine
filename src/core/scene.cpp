@@ -3,11 +3,32 @@
 #include "memory/memory_manager.h"
 
 namespace rglz {
+	const uint16_t SceneStack::s_max_thread_count = (std::thread::hardware_concurrency() - 1< RGLZ_MAX_THREADS) ? std::thread::hardware_concurrency() - 1 : RGLZ_MAX_THREADS;
+
+
+	Scene::Scene() 
+		: m_additional_stack_allocator(nullptr, 0) 
+	{
+		ecs::world_create(&m_world);
+	}
+
+	Scene::~Scene() {
+		ecs::world_destroy(&m_world);
+	}
+
+	void Scene::destroy_entity(ecs::EntityId entity) {
+		ecs::entity_destroy(&m_world, entity);
+	}
+
+	SceneStackNodeBase::SceneStackNodeBase() {
+	}
+
 	SceneStack::SceneStack() 
 	{
 		m_scene_node_head.prev_ptr = &m_scene_node_head;
 		m_scene_node_head.next_ptr = &m_scene_node_head;
 		m_scene_node_head.scene_ptr = nullptr;
+		m_fiber_list_count = 0;
 	}
 
 	SceneStack::~SceneStack() {

@@ -32,14 +32,16 @@ set(
 	${INCLUDE_DIR}/core/attribute.h
 	${INCLUDE_DIR}/core/preferences.h
 	${INCLUDE_DIR}/core/scene.h
+	${INCLUDE_DIR}/core/ecs.h
 	${INCLUDE_DIR}/containers/fixed_string.h
+	${INCLUDE_DIR}/memory/stack_allocator.h
 )
 
 set(
 	SRC
 	${SRC_DIR}/memory/memory_manager.h
 	${SRC_DIR}/memory/memory_block.h
-	${SRC_DIR}/memory/stack_allocator.h
+	${SRC_DIR}/memory/stack_allocator.cpp
 	${SRC_DIR}/errors.cpp
 	${SRC_DIR}/core/entrypoint.cpp
 	${SRC_DIR}/core/logger.cpp
@@ -48,6 +50,7 @@ set(
 	${SRC_DIR}/core/attribute.cpp
 	${SRC_DIR}/core/preferences.cpp
 	${SRC_DIR}/core/scene.cpp
+	${SRC_DIR}/core/ecs.cpp
 	${SRC_DIR}/containers/to_hash.cpp
 	${SRC_DIR}/memory/memory_manager.cpp
 	${SRC_DIR}/memory/memory_block.cpp

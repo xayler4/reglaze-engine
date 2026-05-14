@@ -22,9 +22,15 @@ namespace rglz {
 		if (s_app->m_preferences.has_value()) {
 			s_app->m_preferences.value().rebuild();
 		}
-		s_logger.flush_logs();
-		s_app->flush_logs();
-		memory::MemoryManager::update();
+		while (s_app->m_is_running) {
+			if (s_app->active_scene().has_value()) {
+				s_app->run_systems();
+			}
+			s_logger.flush_logs();
+			s_app->flush_logs();
+			memory::MemoryManager::update();
+
+		}
 	}
 
 	void* Engine::internal_allocate(std::size_t size, std::size_t alignment) {

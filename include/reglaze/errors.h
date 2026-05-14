@@ -4,6 +4,20 @@
 #include <string_view>
 #include <cstdint>
 
+#define RGLZ_ENGINE_ALWAYS_ASSERT_MSG(expr, msg)	\
+	{	\
+		if (!(expr)) {	\
+			rglz::report_engine_assertion_failure(#expr, msg, __LINE__, __FILE__); \
+		}	\
+	}
+
+#define RGLZ_ALWAYS_ASSERT_MSG(expr, msg)	\
+	{	\
+		if (!(expr)) {	\
+			rglz::report_assertion_failure(#expr, msg, __LINE__, __FILE__);	\
+		}	\
+	}
+
 #ifndef RGLZ_ENGINE_RELEASE
 	#define RGLZ_ENGINE_ASSERT(expr)	\
 		{	\
