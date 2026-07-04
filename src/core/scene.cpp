@@ -7,7 +7,7 @@ namespace rglz {
 
 
 	Scene::Scene() 
-		: m_additional_stack_allocator(nullptr, 0) 
+		: m_additional_stack_allocator(nullptr, 0, "Scene Allocator") 
 	{
 		ecs::world_create(&m_world);
 	}

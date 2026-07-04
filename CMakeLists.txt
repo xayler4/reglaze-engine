@@ -5,7 +5,9 @@ project(
 	VERSION 1.0
 )
 
+find_package(Boost REQUIRED)
 find_package(easer-lib 1.0 REQUIRED)
+find_package(SDL3 REQUIRED CONFIG REQUIRED)
 
 # set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fsanitize=address")
 # set(CMAKE_LINKER_FLAGS "${CMAKE_LINKER_FLAGS} -fsanitize=address")
@@ -35,6 +37,11 @@ set(
 	${INCLUDE_DIR}/core/ecs.h
 	${INCLUDE_DIR}/containers/fixed_string.h
 	${INCLUDE_DIR}/memory/stack_allocator.h
+	${INCLUDE_DIR}/gfx/context.h
+	${INCLUDE_DIR}/gfx/renderer.h
+	${INCLUDE_DIR}/gfx/sdl_context.h
+	${INCLUDE_DIR}/gfx/sdl_renderer.h
+	${INCLUDE_DIR}/platform/platform.h
 )
 
 set(
@@ -54,6 +61,10 @@ set(
 	${SRC_DIR}/containers/to_hash.cpp
 	${SRC_DIR}/memory/memory_manager.cpp
 	${SRC_DIR}/memory/memory_block.cpp
+	${SRC_DIR}/gfx/renderer.cpp
+	${SRC_DIR}/gfx/sdl_context.cpp
+	${SRC_DIR}/gfx/sdl_renderer.cpp
+	${SRC_DIR}/platform/platform.cpp
 )
 
 set(
@@ -86,6 +97,7 @@ target_precompile_headers(
 target_link_libraries(
 	${PROJECT_NAME}
 	easer-lib
+	SDL3::SDL3
 )
 
 target_include_directories(

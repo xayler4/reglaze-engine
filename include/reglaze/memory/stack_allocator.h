@@ -23,7 +23,7 @@ namespace rglz {
 			};
 
 		public:
-			StackAllocator(std::uint8_t* memory, std::size_t size);
+			StackAllocator(std::uint8_t* memory, std::size_t size, const FixedString<32> name);
 			
 			template<typename T = std::uint8_t>
 			StackAllocator::Marker allocate(std::size_t n) {
@@ -52,6 +52,7 @@ namespace rglz {
 			std::uint8_t* m_memory;
 			Marker m_marker;
 			std::size_t m_size;
+			FixedString<> m_name;
 		};
 	}
 }

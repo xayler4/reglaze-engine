@@ -157,7 +157,7 @@ namespace rglz {
 
 		template<IsOneOf<TArgs>... TComponents>
 		inline ecs::EntityId create_entity(Scene& scene, TComponents&&... components) {
-			scene.create_entity(std::forward<TComponents>(components)...);
+			return scene.create_entity(std::forward<TComponents>(components)...);
 		}
 
 		template<IsOneOf<TArgs>... TComponents>
@@ -291,6 +291,7 @@ namespace rglz {
 		SceneStack();
 		~SceneStack();
 
+	protected:
 		template<typename TScene, typename... TArgs, typename = std::enable_if_t<std::is_base_of_v<Scene, TScene>>>
 		SceneMarker<TScene> push_scene_stack(std::size_t additional_stack_size, TArgs&&... args) {
 			SceneStackNodeBase* scene_node;
@@ -302,12 +303,12 @@ namespace rglz {
 				void* raw = internal_allocate(sizeof(TScene) + additional_stack_size, alignof(TScene));
 				std::construct_at(reinterpret_cast<TScene*>(raw), std::forward<TArgs>(args)...);
 				scene_node->scene_ptr = reinterpret_cast<TScene*>(raw);
-				scene_node->scene_ptr->m_additional_stack_allocator = memory::StackAllocator(static_cast<uint8_t*>(raw) + sizeof(TScene), additional_stack_size);
+				scene_node->scene_ptr->m_additional_stack_allocator = memory::StackAllocator(static_cast<uint8_t*>(raw) + sizeof(TScene), additional_stack_size, "Scene Allocator");
 			}
 			else {
 				scene_node = static_cast<SceneStackNodeBase*>(internal_allocate(sizeof(SceneStackNode<TScene>) + additional_stack_size, alignof(SceneStackNode<TScene>)));
 				std::construct_at(static_cast<SceneStackNode<TScene>*>(scene_node), std::forward<TArgs>(args)...);
-				scene_node->scene_ptr->m_additional_stack_allocator = memory::StackAllocator(reinterpret_cast<uint8_t*>(scene_node->scene_ptr) + sizeof(TScene), additional_stack_size);
+				scene_node->scene_ptr->m_additional_stack_allocator = memory::StackAllocator(reinterpret_cast<uint8_t*>(scene_node->scene_ptr) + sizeof(TScene), additional_stack_size, "Scene Allocator");
 			}
 
 			scene_node->next_ptr = &m_scene_node_head;
@@ -373,7 +374,7 @@ namespace rglz {
 		void set_active_scene(SceneMarkerBase marker, TSystems&&... systems) {
 			RGLZ_ENGINE_ASSERT(is_scene_valid(marker));
 
-			ecs::ComponentSystemDescriptor component_system_descriptor_list[RGLZ_MAX_THREADS];
+			ecs::ComponentSystemDescriptor component_system_descriptor_list[sizeof...(TSystems)];
 
 			m_active_scene = marker;
 
@@ -381,6 +382,7 @@ namespace rglz {
 				component_system_descriptor_helper<TSystems...>(component_system_descriptor_list, std::forward<TSystems>(systems)...);
 			}
 
+			ecs::component_system_descriptor_list_sort(component_system_descriptor_list, sizeof...(TSystems));
 			m_fiber_list_count = ecs::component_system_fiber_list_create(component_system_descriptor_list, sizeof...(TSystems), m_component_system_fiber_list, s_max_thread_count);
 		}
 

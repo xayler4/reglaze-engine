@@ -3,6 +3,7 @@
 
 #include "base.h"
 #include "containers/fixed_string.h"
+#include <optional>
 #include <string_view>
 
 namespace rglz {

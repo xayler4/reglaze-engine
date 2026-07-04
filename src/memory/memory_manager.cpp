@@ -3,9 +3,9 @@
 
 namespace rglz {
 	namespace memory {
-		StackAllocator MemoryManager::s_core_allocator(nullptr, 0);
-		StackAllocator MemoryManager::s_scene_stack_allocator(nullptr, 0);
-		StackAllocator MemoryManager::s_single_frame_allocator(nullptr, 0);
+		StackAllocator MemoryManager::s_core_allocator(nullptr, 0, "Core Allocator");
+		StackAllocator MemoryManager::s_scene_stack_allocator(nullptr, 0, "Scene Stack Allocator");
+		StackAllocator MemoryManager::s_single_frame_allocator(nullptr, 0, "Single Frame Allocator");
 		
 		void MemoryManager::startup(MemoryBlock& memory_block, const MemoryProfile& memory_profile, std::string_view name) {
 			std::size_t allocation_size = memory_profile.allocation_size;
@@ -60,9 +60,9 @@ namespace rglz {
 				);
 			}
 
-			s_core_allocator = StackAllocator(stack_allocator_data, stack_size);
-			s_scene_stack_allocator = StackAllocator(scene_stack_allocator_data, scene_stack_size);
-			s_single_frame_allocator = StackAllocator(single_frame_allocator_data, single_frame_size);
+			s_core_allocator = StackAllocator(stack_allocator_data, stack_size, "Core Allocator");
+			s_scene_stack_allocator = StackAllocator(scene_stack_allocator_data, scene_stack_size, "Scene Stack Allocator");
+			s_single_frame_allocator = StackAllocator(single_frame_allocator_data, single_frame_size, "Single Frame Allocator");
 			
 			RGLZ_ENGINE_LOG_TRACE(name, " - Total allocated size: ", allocation_size, alignln, name, " - Core stack allocator allocated size: ", stack_size, alignln, name, " - Scene stack allocator allocated size: ", scene_stack_size, alignln, name, " - Single frame allocator allocated size: ", single_frame_size);
 		}

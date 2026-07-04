@@ -7,7 +7,7 @@ let
 			owner = "xayler4";
 			repo = "easer";
 			rev = "main";
-			sha256 = "sha256-oB3bBghpwciKZln8BFXFmupUT3L7Xz96uMSDTDUkCKs=";
+			sha256 = "sha256-wo2wgtvXCRWe084FCgnNsCvvN2eCBc37psdhzcLaCuU=";
 		};
 		nativeBuildInputs = [ pkgs.cmake ];
 		buildInputs = [ pkgs.clang pkgs.boost ];
@@ -22,6 +22,8 @@ pkgs.mkShell {
 		pkgs.cmake
 		pkgs.gdb
 		pkgs.boost
+		pkgs.sdl3
+		pkgs.sdl3-shadercross
 		easerlib
 	];
   	shellHook = ''

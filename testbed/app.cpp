@@ -28,9 +28,27 @@ public:
 	void on_process(Scene& scene) {
 		std::span<TransformComponent> transform_component_view = get_component_view<TransformComponent>(scene);
 		for (TransformComponent& t : transform_component_view) {
-			RGLZ_LOG_INFO(t);
+			// RGLZ_LOG_INFO(t);
 		}
 	}
+};
+
+template<typename T>
+class UpdateGpuSystem : public System<const T> {
+public:
+
+	// void on_process(Scene& scene) {
+	// 	std::span<const T> view = get_component_view<const T>(scene);
+
+	// 	for (const T& v : view) {
+	// 		stream << v;
+	// 	}
+
+	// 	stream.upload();
+	// }
+
+private:
+	// GpuBufferStream stream;
 };
 
 class App : public Application {
@@ -48,6 +66,8 @@ public:
 			Attribute("abcdefg", "random_string"),
 		}});
 
+		set_context_and_renderer(gfx::Context(1280, 720, "myGame", gfx::BackendType::SDL), 1280, 720);
+
 		write_attribute("a", "Something_something");
 		write_attribute("abcdefg", "my other something something");
 		write_attribute("abcde", "hey there");
@@ -62,7 +82,7 @@ public:
 
 		set_active_scene(scene, *test_system);
 
-		// add_component_system(SceneStack::Bottom, SceneStack::Top);
+		// register_input<bool>("forward");
 
 		// reset_scene_stack_at_marker(scene);
 	}
@@ -85,6 +105,12 @@ public:
 		return false;
 	}
 
+	void on_event(const Event& event) override {
+		if (event.type == EventType::Quit) {
+			quit();
+		}
+	}
+
 	TestSystem* test_system;
 };
 
@@ -92,11 +118,10 @@ RGLZ_REGISTER_CLIENT_APP(App);
 RGLZ_DEFAULT_APP_MEMORY_PROFILE({
 	MemoryProfile profile;	
 
-	profile.allocation_size = 320000;
+	profile.allocation_size = 1280000;
 	profile.core_stack_allocator_allocation_size_percent = 50.0;
 	profile.scene_stack_allocator_allocation_size_percent = 40.0;
 	profile.single_frame_allocator_allocation_size_percent = 10.0;
 
 	return profile;
 });
-

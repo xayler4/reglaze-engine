@@ -5,5 +5,6 @@
 #include "core/application.h"
 #include "core/scene.h"
 #include "core/preferences.h"
+#include "gfx/sdl_renderer.h"
 
 #endif	// RGLZ_REGLAZE_H

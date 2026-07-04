@@ -6,19 +6,23 @@ namespace rglz {
 			: m_ptr(ptr)
 		{}
 
-		StackAllocator::StackAllocator(std::uint8_t* memory, std::size_t size)
+		StackAllocator::StackAllocator(std::uint8_t* memory, std::size_t size, const FixedString<32> name)
 			: m_memory(memory)
 			, m_marker(memory)
 			, m_size(size) 
-		{}
+		{
+			m_name += "Stack Allocator \"";
+			m_name += name;
+			m_name += "\": Out of stack memory!";
+		}
 
 		StackAllocator::Marker StackAllocator::allocate(std::size_t size, std::size_t alignment) {
 			std::size_t alloc_size = m_size - (m_marker - m_memory);
-			std::cout << size << " "<< alignment << " " << m_size << " " << m_size - (m_marker - m_memory) << "\n";
+			// std::cout << size << " "<< alignment << " " << m_size << " " << m_size - (m_marker - m_memory) << "\n";
 			void* offsetted_memory = m_marker;
 			uint8_t* ptr = static_cast<std::uint8_t*>(std::align(alignment, size, offsetted_memory, alloc_size));
 
-			RGLZ_ENGINE_ALWAYS_ASSERT_MSG(ptr, "StackAllocator: Out of stack memory!");
+			RGLZ_ENGINE_ALWAYS_ASSERT_MSG(ptr, m_name);
 
 			Marker previous_marker(ptr);
 			m_marker = Marker(ptr + size);

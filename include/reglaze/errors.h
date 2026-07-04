@@ -59,6 +59,10 @@ namespace rglz {
 
 	};
 
+	class BackendError {
+
+	};
+
 	void report_engine_assertion_failure(std::string_view expr, std::uint32_t line, std::string_view file_name);
 
 	void report_engine_assertion_failure(std::string_view expr, std::string_view msg, std::uint32_t line, std::string_view file_name);
