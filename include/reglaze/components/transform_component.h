@@ -1,0 +1,10 @@
+#ifndef RGLZ_COMPONENTS_TRANSFORM_COMPONENTS_H
+#define RGLZ_COMPONENTS_TRANSFORM_COMPONENTS_H
+
+namespace rglz {
+	struct TransformComponent {
+
+	};
+}
+
+#endif	// RGLZ_COMPONENTS_TRANSFORM_COMPONENTS_H

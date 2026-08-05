@@ -5,6 +5,7 @@
 #include "core/memory_profile.h"
 #include "memory/memory_block.h"
 #include "memory/stack_allocator.h"
+#include "memory/free_list_allocator.h"
 
 int main(int argc, const char** argv);
 
@@ -32,10 +33,15 @@ namespace rglz {
 				return s_single_frame_allocator;
 			}
 
+			inline static FreeListAllocator& free_list_allocator() {
+				return s_free_list_allocator;
+			}
+
 		private:
 			static StackAllocator s_core_allocator;
 			static StackAllocator s_single_frame_allocator;
 			static StackAllocator s_scene_stack_allocator;
+			static FreeListAllocator s_free_list_allocator;
 		};
 	}
 }

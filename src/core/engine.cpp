@@ -25,8 +25,11 @@ namespace rglz {
 
 		// 	s_logger.flush_logs();
 		// }
-		while (s_app->m_is_running) {
+		while (true) {
 			s_app->context().on_event_poll(s_app);
+			if (!s_app->m_is_running) {
+				break;
+			}
 
 			s_app->renderer().on_begin();
 			if (s_app->active_scene().has_value()) {

@@ -45,7 +45,7 @@ namespace rglz {
 			has_backend_failed = false;
 
 			if (n_tried_backend) {
-				RGLZ_ENGINE_LOG_INFO("Falling back to ", backend_type_to_str(ctx.backend_type), " backend");
+				RGLZ_ENGINE_LOG_WARN("Falling back to ", backend_type_to_str(ctx.backend_type), " backend");
 			}
 
 			try {

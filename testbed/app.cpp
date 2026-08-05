@@ -63,7 +63,7 @@ public:
 			Attribute("abcd", "my_personal_data"),
 			Attribute("abcde"),
 			Attribute("abcdef", true),
-			Attribute("abcdefg", "random_string"),
+			Attribute("abcdefg", "random_string")
 		}});
 
 		set_context_and_renderer(gfx::Context(1280, 720, "myGame", gfx::BackendType::SDL), 1280, 720);
@@ -119,8 +119,9 @@ RGLZ_DEFAULT_APP_MEMORY_PROFILE({
 	MemoryProfile profile;	
 
 	profile.allocation_size = 1280000;
-	profile.core_stack_allocator_allocation_size_percent = 50.0;
-	profile.scene_stack_allocator_allocation_size_percent = 40.0;
+	profile.core_stack_allocator_allocation_size_percent = 40.0;
+	profile.scene_stack_allocator_allocation_size_percent = 30.0;
+	profile.free_list_allocator_allocation_size_percent = 20.0;
 	profile.single_frame_allocator_allocation_size_percent = 10.0;
 
 	return profile;

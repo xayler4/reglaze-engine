@@ -3,13 +3,20 @@
 
 #include "base.h"
 #include "gfx/context.h"
+#include "gfx/renderer_commands.h"
 #include <cstdint>
+#include <span>
 
 namespace rglz {
 	class Engine;
 
 	namespace gfx {
 		class Renderer {
+		public:
+			struct FrameData {
+				std::span<DrawSpriteCommand> draw_sprite_command_list;
+			};
+
 		protected:
 			Renderer(Context& ctx, uint16_t w, uint16_t h);
 			Renderer(Renderer&& renderer);

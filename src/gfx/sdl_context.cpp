@@ -2,6 +2,7 @@
 #include "core/application.h"
 #include "core/events.h"
 #include "gfx/sdl_context.h"
+#include "memory/memory_manager.h"
 
 namespace rglz {
 	namespace gfx {
@@ -11,6 +12,25 @@ namespace rglz {
 			, m_moved(false)
 
 		{
+			SDL_SetMemoryFunctions(
+				[](std::size_t s) -> void* {
+					return rglz::memory::MemoryManager::free_list_allocator().allocate(s);
+				},
+				[](std::size_t n, std::size_t s) -> void* {
+					void* out_ptr = rglz::memory::MemoryManager::free_list_allocator().allocate(n*s);
+					if (out_ptr != nullptr) {
+						memset(out_ptr, 0, n*s);
+					}
+					return out_ptr;
+				},
+				[](void* p, std::size_t s) -> void* {
+					return rglz::memory::MemoryManager::free_list_allocator().reallocate(p, s);
+				},
+				[](void* p) {
+					rglz::memory::MemoryManager::free_list_allocator().deallocate(p);
+				}
+			);
+
 			if (!SDL_Init(SDL_INIT_VIDEO)) {
 				RGLZ_ENGINE_LOG_ERROR("Failed to initialize SDL: ", std::string_view(SDL_GetError()));
 			}
@@ -26,6 +46,7 @@ namespace rglz {
 			while (SDL_PollEvent(&event)) {
 				switch (event.type) {
 					case SDL_EVENT_WINDOW_CLOSE_REQUESTED:
+					case SDL_EVENT_WINDOW_DESTROYED:
 					case SDL_EVENT_QUIT: {
 						application->on_event(Event{EventType::Quit});
 					} break;

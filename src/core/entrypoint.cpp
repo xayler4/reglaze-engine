@@ -22,6 +22,7 @@ int main(int argc, const char** argv) {
 	tmp_memory_profile.allocation_size = 8000;
 	tmp_memory_profile.core_stack_allocator_allocation_size_percent = 0;
 	tmp_memory_profile.scene_stack_allocator_allocation_size_percent = 0;
+	tmp_memory_profile.free_list_allocator_allocation_size_percent = 0;
 	tmp_memory_profile.single_frame_allocator_allocation_size_percent = 100;
 
 	rglz::memory::MemoryBlock memory_block(tmp_memory_profile.allocation_size);
@@ -43,6 +44,11 @@ int main(int argc, const char** argv) {
 			? rglz::Attribute("MemoryProfileSceneStackAllocatorMaxAllocationSize", static_cast<double>(app_memory_profile.scene_stack_allocator_max_allocation_size.value()))
 			: rglz::Attribute("MemoryProfileSceneStackAllocatorMaxAllocationSize");
 
+	rglz::Attribute default_app_memory_profile_free_list_allocator_max_allocation_size_attribute = 
+		app_memory_profile.free_list_allocator_max_allocation_size.has_value()
+			? rglz::Attribute("MemoryProfileFreeListAllocatorMaxAllocationSize", static_cast<double>(app_memory_profile.free_list_allocator_max_allocation_size.value()))
+			: rglz::Attribute("MemoryProfileFreeListAllocatorMaxAllocationSize");
+
 	rglz::Attribute default_app_memory_profile_single_frame_allocator_max_allocation_size_attribute = 
 		app_memory_profile.single_frame_allocator_max_allocation_size.has_value()
 			? rglz::Attribute("MemoryProfileSingleFrameAllocatorMaxAllocationSize", static_cast<double>(app_memory_profile.single_frame_allocator_max_allocation_size.value()))
@@ -53,9 +59,11 @@ int main(int argc, const char** argv) {
 			rglz::Attribute("MemoryProfileAllocationSize", static_cast<double>(app_memory_profile.allocation_size)),
 			rglz::Attribute("MemoryProfileCoreStackAllocatorAllocationSizePercent", app_memory_profile.core_stack_allocator_allocation_size_percent),
 			rglz::Attribute("MemoryProfileSceneStackAllocatorAllocationSizePercent", app_memory_profile.scene_stack_allocator_allocation_size_percent),
+			rglz::Attribute("MemoryProfileFreeListAllocatorAllocationSizePercent", app_memory_profile.free_list_allocator_allocation_size_percent),
 			rglz::Attribute("MemoryProfileSingleFrameAllocatorAllocationSizePercent", app_memory_profile.single_frame_allocator_allocation_size_percent),
 			default_app_memory_profile_stack_allocator_max_allocation_size_attribute,
 			default_app_memory_profile_scene_stack_allocator_max_allocation_size_attribute,
+			default_app_memory_profile_free_list_allocator_max_allocation_size_attribute,
 			default_app_memory_profile_single_frame_allocator_max_allocation_size_attribute
 		});
 

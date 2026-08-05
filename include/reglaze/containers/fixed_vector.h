@@ -2,8 +2,8 @@
 #define RGLZ_CONTAINERS_FIXED_VECTOR_H
 
 #include "base.h"
-#include "easer/easer.h"
 #include <array>
+#include "easer/easer.h"
 
 namespace rglz {
 	template<typename T, std::size_t UCapacity = 128>
@@ -156,6 +156,28 @@ namespace rglz {
 		std::array<T, UCapacity> m_data;
 		std::size_t m_size;
 	};
+
+
 }
+
+template<typename T, ESR_REGISTRY_PARAMS>
+ESR_REGISTER_PROC_WRS("asset_manager", std::vector<T>, v, stream, 
+		{
+			stream << v.size();
+			for (auto& data : v) {
+				stream << data;
+			}
+		},
+		{
+			std::size_t size;
+			stream >> size;
+			v.resize(size);
+			for (auto& data : v) {
+				stream >> data;
+			}
+		},
+		{
+			return sizeof(std::vector<T>);
+		});
 
 #endif	// RGLZ_CONTAINERS_FIXED_VECTOR_H

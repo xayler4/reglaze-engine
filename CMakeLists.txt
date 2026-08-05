@@ -37,18 +37,20 @@ set(
 	${INCLUDE_DIR}/core/ecs.h
 	${INCLUDE_DIR}/containers/fixed_string.h
 	${INCLUDE_DIR}/memory/stack_allocator.h
+	${INCLUDE_DIR}/memory/free_list_allocator.h
+	${INCLUDE_DIR}/components/transform_component.h
 	${INCLUDE_DIR}/gfx/context.h
 	${INCLUDE_DIR}/gfx/renderer.h
+	${INCLUDE_DIR}/gfx/renderer_commands.h
 	${INCLUDE_DIR}/gfx/sdl_context.h
 	${INCLUDE_DIR}/gfx/sdl_renderer.h
+	${INCLUDE_DIR}/math/vec.h
+	${INCLUDE_DIR}/math/mat.h
 	${INCLUDE_DIR}/platform/platform.h
 )
 
 set(
 	SRC
-	${SRC_DIR}/memory/memory_manager.h
-	${SRC_DIR}/memory/memory_block.h
-	${SRC_DIR}/memory/stack_allocator.cpp
 	${SRC_DIR}/errors.cpp
 	${SRC_DIR}/core/entrypoint.cpp
 	${SRC_DIR}/core/logger.cpp
@@ -59,6 +61,12 @@ set(
 	${SRC_DIR}/core/scene.cpp
 	${SRC_DIR}/core/ecs.cpp
 	${SRC_DIR}/containers/to_hash.cpp
+
+	${SRC_DIR}/memory/memory_manager.h
+	${SRC_DIR}/memory/memory_block.h
+
+	${SRC_DIR}/memory/stack_allocator.cpp
+	${SRC_DIR}/memory/free_list_allocator.cpp
 	${SRC_DIR}/memory/memory_manager.cpp
 	${SRC_DIR}/memory/memory_block.cpp
 	${SRC_DIR}/gfx/renderer.cpp

@@ -52,7 +52,6 @@ namespace rglz {
 		SDLRenderer::~SDLRenderer() {
 			if (m_device != nullptr && !m_moved) {
 				SDLContext& sdl_context = static_cast<SDLContext&>(context());
-
 				if (sdl_context.window != nullptr) {
 					SDL_ReleaseWindowFromGPUDevice(m_device, sdl_context.window);
 				}
@@ -62,19 +61,31 @@ namespace rglz {
 
 		void SDLRenderer::on_begin() {
 			SDLContext& sdl_context = static_cast<SDLContext&>(context());
-			uint32_t w;
-			uint32_t h;
+
+			SDL_WindowFlags flags = SDL_GetWindowFlags(sdl_context.window);
+			if (flags & (SDL_WINDOW_MINIMIZED | SDL_WINDOW_HIDDEN | SDL_WINDOW_OCCLUDED)) {
+				sdl_context.valid = false;
+				return;
+			}
 
 			m_primary_command_buffer = SDL_AcquireGPUCommandBuffer(m_device);
-			SDL_WaitAndAcquireGPUSwapchainTexture(m_primary_command_buffer, sdl_context.window, &m_swapchain_texture, &w, &h);
-			if (m_swapchain_texture != nullptr) {
-				sdl_context.width = (uint16_t)w;	
-				sdl_context.height = (uint16_t)h;	
+			if (!m_primary_command_buffer) {
+				sdl_context.valid = false;
+				return;
+			}
+
+			uint32_t w, h;
+			bool acquired = SDL_WaitAndAcquireGPUSwapchainTexture(
+				m_primary_command_buffer, sdl_context.window, &m_swapchain_texture, &w, &h);
+
+			if (acquired && m_swapchain_texture != nullptr) {
+				sdl_context.width = (uint16_t)w;    
+				sdl_context.height = (uint16_t)h;    
 				sdl_context.valid = true;
 
 				m_cache.color_target_info.texture = m_swapchain_texture;
 				m_render_pass = SDL_BeginGPURenderPass(m_primary_command_buffer, &m_cache.color_target_info, 1, nullptr);
-			}
+			} 
 			else {
 				sdl_context.valid = false;
 			}
@@ -85,9 +96,8 @@ namespace rglz {
 
 			if (sdl_context.valid) {
 				SDL_EndGPURenderPass(m_render_pass);
+				SDL_SubmitGPUCommandBuffer(m_primary_command_buffer);
 			}
-
-			SDL_SubmitGPUCommandBuffer(m_primary_command_buffer);
 		}
 
 		SDLRendererVulkan::SDLRendererVulkan(gfx::SDLContext& ctx, uint16_t w, uint16_t h) 
