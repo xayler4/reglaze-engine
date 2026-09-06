@@ -107,6 +107,23 @@ namespace rglz {
 			return *this;
 		}
 
+		inline FixedString<UMaxLength> operator + (char c) {
+			RGLZ_ENGINE_ASSERT((m_length + 1) < UMaxLength);
+
+			std::string_view str(&c, 1);
+
+			return FixedString<UMaxLength>(std::string_view(m_data.data(), m_length), str);
+		}
+
+		inline FixedString<UMaxLength>& operator += (char c) {
+			RGLZ_ENGINE_ASSERT((m_length + 1) < UMaxLength);
+
+			m_data.data()[m_length] = c;
+			m_length ++;
+
+			return *this;
+		}
+
 		inline FixedString<UMaxLength> operator + (std::string_view str) {
 			RGLZ_ENGINE_ASSERT((m_length + str.length()) < UMaxLength);
 

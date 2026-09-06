@@ -48,33 +48,33 @@ namespace rglz {
 		}
 
 		inline bool& boolean_value() {
-			RGLZ_ASSERT(std::holds_alternative<bool>(m_value));
+			RGLZ_ENGINE_ASSERT(std::holds_alternative<bool>(m_value));
 			return std::get<bool>(m_value);
 		}
 
 		inline float& float_value() {
-			RGLZ_ASSERT(std::holds_alternative<float>(m_value));
+			RGLZ_ENGINE_ASSERT(std::holds_alternative<float>(m_value));
 			return std::get<float>(m_value);
 		}
 
 		inline FixedString<RGLZ_PREFERENCES_ATTRIBUTE_RVALUE_MAX_LENGTH>& string_value() {
-			RGLZ_ASSERT(std::holds_alternative<FixedString<RGLZ_PREFERENCES_ATTRIBUTE_RVALUE_MAX_LENGTH>>(m_value));
+			RGLZ_ENGINE_ASSERT(std::holds_alternative<FixedString<RGLZ_PREFERENCES_ATTRIBUTE_RVALUE_MAX_LENGTH>>(m_value));
 
 			return std::get<FixedString<RGLZ_PREFERENCES_ATTRIBUTE_RVALUE_MAX_LENGTH>>(m_value);
 		}
 
 		inline bool boolean_value() const {
-			RGLZ_ASSERT(std::holds_alternative<bool>(m_value));
+			RGLZ_ENGINE_ASSERT(std::holds_alternative<bool>(m_value));
 			return std::get<bool>(m_value);
 		}
 
 		inline float float_value() const {
-			RGLZ_ASSERT(std::holds_alternative<float>(m_value));
+			RGLZ_ENGINE_ASSERT(std::holds_alternative<float>(m_value));
 			return std::get<float>(m_value);
 		}
 
 		inline const FixedString<RGLZ_PREFERENCES_ATTRIBUTE_RVALUE_MAX_LENGTH>& string_value() const {
-			RGLZ_ASSERT(std::holds_alternative<FixedString<RGLZ_PREFERENCES_ATTRIBUTE_RVALUE_MAX_LENGTH>>(m_value));
+			RGLZ_ENGINE_ASSERT(std::holds_alternative<FixedString<RGLZ_PREFERENCES_ATTRIBUTE_RVALUE_MAX_LENGTH>>(m_value));
 
 			return std::get<FixedString<RGLZ_PREFERENCES_ATTRIBUTE_RVALUE_MAX_LENGTH>>(m_value);
 		}

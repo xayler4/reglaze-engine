@@ -5,8 +5,8 @@
 
 namespace rglz {
 	Application::Application(std::string_view file_name, std::string_view logger_name) 
-		: Logger(file_name, logger_name),
-		m_is_running(true)
+		: Logger(file_name, logger_name)
+		, m_is_running(true)
 	{
 	}
 

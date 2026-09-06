@@ -6,6 +6,8 @@
 #include "core/preferences.h"
 #include "core/logger.h"
 #include "core/memory_profile.h"
+#include "core/asset_manager.h"
+#include "core/manual_lifetime.h"
 #include <type_traits>
 #include <memory>
 #include <utility>
@@ -151,12 +153,12 @@ namespace rglz { \
 #endif
 
 namespace rglz {
-	class Engine {
+	class Engine : public AssetManager {
 	public:
 		using LoggerType = Logger<3>;
 
 	public:
-		static void startup();
+		static void startup(bool asset_manager_read_from_archive, std::string_view asset_manager_archive);
 
 		static void shutdown();
 
@@ -167,10 +169,6 @@ namespace rglz {
 			void* raw_app = internal_allocate(sizeof(TApplication), alignof(TApplication));
 			s_app = static_cast<TApplication*>(raw_app);
 			std::construct_at(static_cast<TApplication*>(raw_app));
-		}
-
-		static inline Application& app() {
-			return *s_app;
 		}
 
 		static inline LoggerType::Log log(LoggerSeverity severity) {
@@ -188,6 +186,21 @@ namespace rglz {
 			return &s_logger;
 		}
 
+		static inline Image load_image(std::string_view file_path) {
+			return s_asset_manager.get().load_image(file_path);
+		};
+
+		static inline Application& app() {
+			return *s_app;
+		}
+
+		static inline bool is_app_valid() {
+			if (s_app == nullptr) {
+				return false;
+			}
+			return true;
+		}
+
 		Engine() = delete;
 		Engine(const Engine&) = delete;
 
@@ -198,6 +211,7 @@ namespace rglz {
 
 	private:
 		static LoggerType s_logger;
+		static ManualLifetime<AssetManager> s_asset_manager;
 		static Application* s_app;
 	};
 }

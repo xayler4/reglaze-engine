@@ -50,6 +50,13 @@ namespace rglz {
 					case SDL_EVENT_QUIT: {
 						application->on_event(Event{EventType::Quit});
 					} break;
+					case SDL_EVENT_KEY_UP: {
+						application->on_event(Event{EventType::KeyUp, static_cast<Key>(event.key.key)});
+
+					} break;
+					case SDL_EVENT_KEY_DOWN: {
+						application->on_event(Event{EventType::KeyDown, static_cast<Key>(event.key.key)});
+					} break;
 				}
 			}
 		}

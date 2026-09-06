@@ -6,6 +6,7 @@
 #include "core/preferences.h"
 #include "core/scene.h"
 #include "core/events.h"
+#include "core/action_manager.h"
 #include "gfx/sdl_renderer.h"
 #include <variant>
 
@@ -14,14 +15,19 @@ namespace rglz {
 
 	class Application : 
 		public Logger<RGLZ_LOGGER_LOG_MAX_CUNCURRENT_LOGS>,
-		public SceneStack {
-
+		public SceneStack,
+		protected ActionManager
+	{
 	public:
 		Application(std::string_view file_name = "app_log_latest.txt", std::string_view logger_name = "APP");
 		virtual ~Application();
 
 		inline void quit() {
 			m_is_running = false;
+		}
+
+		inline ActionManager& actions() {
+			return *static_cast<ActionManager*>(this);
 		}
 
 	protected:
@@ -72,6 +78,7 @@ namespace rglz {
 				return c;
 			}, m_context.value());
 		}
+
 	private:
 		virtual bool on_attribute_read(const Attribute& attribute);
 
@@ -85,6 +92,7 @@ namespace rglz {
 		std::optional<Preferences> m_preferences;
 		std::optional<gfx::ContextVariant> m_context;
 		std::optional<gfx::RendererVariant> m_renderer;
+		ActionManager m_actions;
 
 		friend class Engine;
 		PLATFORM_FRIEND_BACKEND_CONTEXT_CLASSES

@@ -8,7 +8,7 @@ namespace rglz {
 	namespace gfx {
 		struct DrawSpriteCommand {
 			Mat3 transform;	
-			// Sprite sprite;
+			 // sprite;
 		};
 	}
 }

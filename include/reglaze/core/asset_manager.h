@@ -6,15 +6,16 @@
 #include "containers/fixed_vector.h"
 #include "containers/fixed_string.h"
 #include "easer/easer.h"
+#include <mutex>
 
 #define ASSET_MANAGER_ESR_CHANNEL "asset_manager"
 
 namespace rglz {
 	struct Image {
-		uint8_t n_channels;
-		uint16_t width;
-		uint16_t height;
-		uint8_t* pixels;
+		int n_channels;
+		int width;
+		int height;
+		uint8_t* data;
 	};
 
 	class AssetManager {
@@ -50,6 +51,7 @@ namespace rglz {
 		const bool m_is_packed;
 		ManualLifetime<std::ifstream> m_file;
 		ArchiveFileTable m_archive;
+		static std::mutex s_mutex;
 	};
 }
 

@@ -2,6 +2,8 @@
 
 using namespace rglz;
 
+ActionId forward_action;
+
 struct TransformComponent {
 	int x;
 	int y;
@@ -29,6 +31,15 @@ public:
 		std::span<TransformComponent> transform_component_view = get_component_view<TransformComponent>(scene);
 		for (TransformComponent& t : transform_component_view) {
 			// RGLZ_LOG_INFO(t);
+			if (Engine::app().actions().is_down(forward_action)) {
+				// logic
+			}
+			else {
+				// logic
+			}
+			// else if(Engine::app().is_press("Forward")) {
+			//
+			// }
 		}
 	}
 };
@@ -82,7 +93,10 @@ public:
 
 		set_active_scene(scene, *test_system);
 
-		// register_input<bool>("forward");
+		Image image = Engine::load_image("dragon.png");
+		RGLZ_LOG_INFO(image.height, " ", image.width, " ", image.n_channels);
+		forward_action = actions().create(ActionType::Button);
+
 
 		// reset_scene_stack_at_marker(scene);
 	}
@@ -106,17 +120,26 @@ public:
 	}
 
 	void on_event(const Event& event) override {
-		if (event.type == EventType::Quit) {
-			quit();
+		switch (event.type) {
+			case EventType::Quit: {
+				quit();
+			} break;
+			case EventType::KeyDown: {
+				actions().press(forward_action);
+			}
+			case EventType::KeyUp: {
+				actions().release(forward_action);
+			}
 		}
 	}
 
+public:
 	TestSystem* test_system;
 };
 
 RGLZ_REGISTER_CLIENT_APP(App);
 RGLZ_DEFAULT_APP_MEMORY_PROFILE({
-	MemoryProfile profile;	
+	MemoryProfile profile;
 
 	profile.allocation_size = 1280000;
 	profile.core_stack_allocator_allocation_size_percent = 40.0;

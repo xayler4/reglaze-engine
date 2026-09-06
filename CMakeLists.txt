@@ -35,6 +35,8 @@ set(
 	${INCLUDE_DIR}/core/preferences.h
 	${INCLUDE_DIR}/core/scene.h
 	${INCLUDE_DIR}/core/ecs.h
+	${INCLUDE_DIR}/core/asset_manager.h
+	${INCLUDE_DIR}/core/action_manager.h
 	${INCLUDE_DIR}/containers/fixed_string.h
 	${INCLUDE_DIR}/memory/stack_allocator.h
 	${INCLUDE_DIR}/memory/free_list_allocator.h
@@ -60,6 +62,8 @@ set(
 	${SRC_DIR}/core/preferences.cpp
 	${SRC_DIR}/core/scene.cpp
 	${SRC_DIR}/core/ecs.cpp
+	${SRC_DIR}/core/asset_manager.cpp
+	${SRC_DIR}/core/action_manager.cpp
 	${SRC_DIR}/containers/to_hash.cpp
 
 	${SRC_DIR}/memory/memory_manager.h
@@ -73,6 +77,9 @@ set(
 	${SRC_DIR}/gfx/sdl_context.cpp
 	${SRC_DIR}/gfx/sdl_renderer.cpp
 	${SRC_DIR}/platform/platform.cpp
+
+	${SRC_DIR}/external/stb_image.h
+	${SRC_DIR}/external/stb_image.cpp
 )
 
 set(

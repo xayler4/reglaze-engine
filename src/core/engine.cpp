@@ -4,8 +4,10 @@
 namespace rglz {
 	Logger<3> Engine::s_logger = Logger<3>("rglz_latest_log.txt", "RGLZ");
 	Application* Engine::s_app = nullptr;
+	ManualLifetime<AssetManager> Engine::s_asset_manager;
 
-	void Engine::startup() {
+	void Engine::startup(bool asset_manager_read_from_archive, std::string_view asset_manager_archive) {
+		s_asset_manager.create(asset_manager_read_from_archive, asset_manager_archive);
 		if (s_app->m_preferences.has_value()) {
 			for (auto pair : s_app->m_preferences.value()) {
 				s_app->on_attribute_read(pair.value);
@@ -16,6 +18,7 @@ namespace rglz {
 
 	void Engine::shutdown() {
 		std::destroy_at(s_app);
+		s_asset_manager.destroy();
 		s_logger.flush_logs();
 	}
 
@@ -40,6 +43,8 @@ namespace rglz {
 
 			s_logger.flush_logs();
 			s_app->flush_logs();
+
+			s_app->actions().update();
 			memory::MemoryManager::update();
 
 		}

@@ -8,6 +8,7 @@
 
 namespace rglz {
 	std::size_t to_hash(std::string_view str);
+	std::size_t to_hash(uint32_t n);
 
 	template<typename TKey, std::size_t UCapacity>
 	struct Hash {
