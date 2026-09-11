@@ -15,8 +15,7 @@ namespace rglz {
 
 	class Application : 
 		public Logger<RGLZ_LOGGER_LOG_MAX_CUNCURRENT_LOGS>,
-		public SceneStack,
-		protected ActionManager
+		public SceneStack
 	{
 	public:
 		Application(std::string_view file_name = "app_log_latest.txt", std::string_view logger_name = "APP");
@@ -26,8 +25,8 @@ namespace rglz {
 			m_is_running = false;
 		}
 
-		inline ActionManager& actions() {
-			return *static_cast<ActionManager*>(this);
+		inline const ActionManager& actions() const {
+			return m_actions;
 		}
 
 	protected:
@@ -77,6 +76,10 @@ namespace rglz {
 			return std::visit([](auto& c) -> gfx::Context& {
 				return c;
 			}, m_context.value());
+		}
+
+		inline ActionManager& actions() {
+			return m_actions;
 		}
 
 	private:

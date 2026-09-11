@@ -91,10 +91,10 @@ namespace rglz { \
 // App logger
 
 #if RGLZ_LOGGER_DEBUG_ENABLE == 1
-	#define RGLZ_LOG_DEBUG(...) (::rglz::Engine::app().log(::rglz::LoggerSeverity::Debug).stream(__VA_ARGS__))
-	#define RGLZ_LOG_DEBUG_GET(log_name, ...) auto log_name = (::rglz::Engine::app().log(::rglz::LoggerSeverity::Debug).stream( __VA_ARGS__))
+	#define RGLZ_LOG_DEBUG(...) (::rglz::Engine::app_logger().log(::rglz::LoggerSeverity::Debug).stream(__VA_ARGS__))
+	#define RGLZ_LOG_DEBUG_GET(log_name, ...) auto log_name = (::rglz::Engine::app_logger().log(::rglz::LoggerSeverity::Debug).stream( __VA_ARGS__))
 	#define RGLZ_LOG_DEBUG_TO(log_name, ...)	\
-		RGLZ_ASSERT_MSG(log_name.severity() == ::rglz::LoggerSeverity::Debug && log_name.logger() == &::rglz::Engine::app(), "Log is not owned by app logger!");	\
+		RGLZ_ASSERT_MSG(log_name.severity() == ::rglz::LoggerSeverity::Debug && log_name.logger() == &::rglz::Engine::app_logger(), "Log is not owned by app logger!");	\
 		log_name.stream(__VA_ARGS__)
 #else
 	#define RGLZ_LOG_DEBUG(...)
@@ -104,10 +104,10 @@ namespace rglz { \
 
 
 #if RGLZ_LOGGER_TRACE_ENABLE == 1
-	#define RGLZ_LOG_TRACE(...) (::rglz::Engine::app().log(::rglz::LoggerSeverity::Trace).stream(__VA_ARGS__))
-	#define RGLZ_LOG_TRACE_GET(log_name, ...) auto log_name = (::rglz::Engine::app().log(::rglz::LoggerSeverity::Trace).stream( __VA_ARGS__))
+	#define RGLZ_LOG_TRACE(...) (::rglz::Engine::app_logger().log(::rglz::LoggerSeverity::Trace).stream(__VA_ARGS__))
+	#define RGLZ_LOG_TRACE_GET(log_name, ...) auto log_name = (::rglz::Engine::app_logger().log(::rglz::LoggerSeverity::Trace).stream( __VA_ARGS__))
 	#define RGLZ_LOG_TRACE_TO(log_name, ...)	\
-		RGLZ_ASSERT_MSG(log_name.severity() == ::rglz::LoggerSeverity::Trace && log_name.logger() == &::rglz::Engine::app(), "Log is not owned by app logger!");	\
+		RGLZ_ASSERT_MSG(log_name.severity() == ::rglz::LoggerSeverity::Trace && log_name.logger() == &::rglz::Engine::app_logger(), "Log is not owned by app logger!");	\
 		log_name.stream(__VA_ARGS__)
 #else
 	#define RGLZ_LOG_TRACE(...)
@@ -117,10 +117,10 @@ namespace rglz { \
 	
 
 #if RGLZ_LOGGER_INFO_ENABLE == 1
-	#define RGLZ_LOG_INFO(...) (::rglz::Engine::app().log(::rglz::LoggerSeverity::Info).stream(__VA_ARGS__))
-	#define RGLZ_LOG_INFO_GET(log_name, ...) auto log_name = (::rglz::Engine::app().log(::rglz::LoggerSeverity::Info).stream( __VA_ARGS__))
+	#define RGLZ_LOG_INFO(...) (::rglz::Engine::app_logger().log(::rglz::LoggerSeverity::Info).stream(__VA_ARGS__))
+	#define RGLZ_LOG_INFO_GET(log_name, ...) auto log_name = (::rglz::Engine::app_logger().log(::rglz::LoggerSeverity::Info).stream( __VA_ARGS__))
 	#define RGLZ_LOG_INFO_TO(log_name, ...)	\
-		RGLZ_ASSERT_MSG(log_name.severity() == ::rglz::LoggerSeverity::Info && log_name.logger() == &::rglz::Engine::app(), "Log is not owned by app logger!");	\
+		RGLZ_ASSERT_MSG(log_name.severity() == ::rglz::LoggerSeverity::Info && log_name.logger() == &::rglz::Engine::app_logger(), "Log is not owned by app logger!");	\
 		log_name.stream(__VA_ARGS__)
 #else
 	#define RGLZ_LOG_INFO(...)
@@ -129,10 +129,10 @@ namespace rglz { \
 #endif
 
 #if RGLZ_LOGGER_WARN_ENABLE == 1
-	#define RGLZ_LOG_WARN(...) (::rglz::Engine::app().log(::rglz::LoggerSeverity::Warn).stream(__VA_ARGS__))
-	#define RGLZ_LOG_WARN_GET(log_name, ...) auto log_name = (::rglz::Engine::app().log(::rglz::LoggerSeverity::Warn).stream( __VA_ARGS__))
+	#define RGLZ_LOG_WARN(...) (::rglz::Engine::app_logger().log(::rglz::LoggerSeverity::Warn).stream(__VA_ARGS__))
+	#define RGLZ_LOG_WARN_GET(log_name, ...) auto log_name = (::rglz::Engine::app_logger().log(::rglz::LoggerSeverity::Warn).stream( __VA_ARGS__))
 	#define RGLZ_LOG_WARN_TO(log_name, ...)	\
-		RGLZ_ASSERT_MSG(log_name.severity() == ::rglz::LoggerSeverity::Warn && log_name.logger() == &::rglz::Engine::app(), "Log is not owned by app logger!");	\
+		RGLZ_ASSERT_MSG(log_name.severity() == ::rglz::LoggerSeverity::Warn && log_name.logger() == &::rglz::Engine::app_logger(), "Log is not owned by app logger!");	\
 		log_name.stream(__VA_ARGS__)
 #else
 	#define RGLZ_LOG_WARN(...)
@@ -141,10 +141,10 @@ namespace rglz { \
 #endif
 	
 #if RGLZ_LOGGER_ERROR_ENABLE == 1
-	#define RGLZ_LOG_ERROR(...) (::rglz::Engine::app().log(::rglz::LoggerSeverity::Error).stream(__VA_ARGS__))
-	#define RGLZ_LOG_ERROR_GET(log_name, ...) auto log_name = (::rglz::Engine::app().log(::rglz::LoggerSeverity::Error).stream( __VA_ARGS__))
+	#define RGLZ_LOG_ERROR(...) (::rglz::Engine::app_logger().log(::rglz::LoggerSeverity::Error).stream(__VA_ARGS__))
+	#define RGLZ_LOG_ERROR_GET(log_name, ...) auto log_name = (::rglz::Engine::app_logger().log(::rglz::LoggerSeverity::Error).stream( __VA_ARGS__))
 	#define RGLZ_LOG_ERROR_TO(log_name, ...)	\
-		RGLZ_ASSERT_MSG(log_name.severity() == ::rglz::LoggerSeverity::Error && log_name.logger() == &::rglz::Engine::app(), "Log is not owned by app logger!");	\
+		RGLZ_ASSERT_MSG(log_name.severity() == ::rglz::LoggerSeverity::Error && log_name.logger() == &::rglz::Engine::app_logger(), "Log is not owned by app logger!");	\
 		log_name.stream(__VA_ARGS__)
 #else
 	#define RGLZ_LOG_ERROR(...)
@@ -190,8 +190,12 @@ namespace rglz {
 			return s_asset_manager.get().load_image(file_path);
 		};
 
-		static inline Application& app() {
+		static inline const Application& app() {
 			return *s_app;
+		}
+
+		static inline Logger<RGLZ_LOGGER_LOG_MAX_CUNCURRENT_LOGS>& app_logger() {
+			return *(static_cast<Logger<RGLZ_LOGGER_LOG_MAX_CUNCURRENT_LOGS>*>(s_app));
 		}
 
 		static inline bool is_app_valid() {

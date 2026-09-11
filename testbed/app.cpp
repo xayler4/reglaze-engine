@@ -20,8 +20,10 @@ class CustomScene : public Scene {
 public:
 	void on_init() {
 		allocate_component_list<TransformComponent>(200);
-		ecs::EntityId myentity = create_entity(TransformComponent{333});
-		destroy_entity(myentity);
+		ecs::EntityId myentity = create_entity(TransformComponent{200});
+		RGLZ_ASSERT(is_alive(myentity));
+		
+		// add_components<TransformComponent>( myentity, TransformComponent{});
 	}
 };
 
@@ -31,15 +33,13 @@ public:
 		std::span<TransformComponent> transform_component_view = get_component_view<TransformComponent>(scene);
 		for (TransformComponent& t : transform_component_view) {
 			// RGLZ_LOG_INFO(t);
-			if (Engine::app().actions().is_down(forward_action)) {
-				// logic
+			if (Engine::app().actions().is_pressed(forward_action)){
+				RGLZ_LOG_INFO("Forward just pressed");
 			}
-			else {
-				// logic
+			else if (Engine::app().actions().is_released(forward_action)) {
+				
+				RGLZ_LOG_INFO("Forward just released");
 			}
-			// else if(Engine::app().is_press("Forward")) {
-			//
-			// }
 		}
 	}
 };
@@ -93,7 +93,7 @@ public:
 
 		set_active_scene(scene, *test_system);
 
-		Image image = Engine::load_image("dragon.png");
+		Image image = Engine::load_image("res/dragon.png");
 		RGLZ_LOG_INFO(image.height, " ", image.width, " ", image.n_channels);
 		forward_action = actions().create(ActionType::Button);
 
@@ -125,11 +125,15 @@ public:
 				quit();
 			} break;
 			case EventType::KeyDown: {
-				actions().press(forward_action);
-			}
+				if (event.key == rglz::Key::W) {
+					actions().press(forward_action);
+				}
+			} break;
 			case EventType::KeyUp: {
-				actions().release(forward_action);
-			}
+				if (event.key == rglz::Key::W) {
+					actions().release(forward_action);
+				}
+			} break;
 		}
 	}
 

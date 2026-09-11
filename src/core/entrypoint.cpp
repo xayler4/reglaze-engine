@@ -135,7 +135,7 @@ int main(int argc, const char** argv) {
 	catch (const rglz::FatalError& e) {
 		rglz::Engine::flush_logs();
 		if (rglz::Engine::is_app_valid()) {
-			rglz::Engine::app().flush_logs();
+			rglz::Engine::app_logger().flush_logs();
 		}
 
 		return FATAL_ERROR;

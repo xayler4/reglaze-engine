@@ -71,6 +71,7 @@ namespace rglz {
 		}
 
 		void entity_add_components(World* world_p, EntityId entity, ComponentDescriptor* component_descriptor_list, uint32_t count) {
+
 				RGLZ_ENGINE_ALWAYS_ASSERT_MSG(count < MAX_ENTITIES , "Max entities limit exceeded");
 
 			for (uint32_t i = 0; i < count; i++) {
@@ -78,6 +79,9 @@ namespace rglz {
 				ComponentId component_id = current_descriptor->component_id;
 
 				RGLZ_ENGINE_ALWAYS_ASSERT_MSG(component_id != 0, "component_id = 0 is reserved");
+				RGLZ_ENGINE_LOG_DEBUG(current_descriptor->component_bitmask, " ",current_descriptor->component_id);
+
+				RGLZ_ENGINE_ALWAYS_ASSERT_MSG(!entity_has_components(world_p, entity, current_descriptor->component_bitmask), "Entity already owns one or more of the specified components to add");
 				ComponentPool* component_pool = &(world_p->component_pool_list[component_id - 1]);
 				uint32_t index = component_pool->count++;
 
@@ -142,7 +146,7 @@ namespace rglz {
 		void component_descriptor_create(ComponentDescriptor* component_descriptor_p, void* component_p, ComponentId component_id) {
 			component_descriptor_p->component_p = component_p;
 			component_descriptor_p->component_id = component_id;
-			component_descriptor_p->component_bitmask = component_id_to_bitmask(component_id) | 1;
+			component_descriptor_p->component_bitmask = component_id_to_bitmask(component_id);
 		}
 
 		bool entity_has_component(World* world_p, EntityId entity, ComponentId component_id) {
@@ -152,15 +156,15 @@ namespace rglz {
 			return false;
 		}
 
-		bool entity_is_alive(World* world_p, EntityId entity) {
-			return entity_has_component(world_p, entity, 0);
-		}
-
 		bool entity_has_components(World* world_p, EntityId entity, ComponentBitmask component_bitmask) {
-			if (world_p->component_bitset_list[entity] & component_bitmask) {
+			if ((world_p->component_bitset_list[entity] & component_bitmask) == component_bitmask) {
 				return true;
 			}
 			return false;
+		}
+
+		bool entity_is_alive(World* world_p, EntityId entity) {
+			return entity_has_component(world_p, entity, 0);
 		}
 
 		ComponentBitmask component_id_to_bitmask(ComponentId component_id) {

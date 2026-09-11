@@ -42,13 +42,13 @@ namespace rglz {
 		virtual void on_init() = 0;
 
 		template<typename T>
-		void allocate_component_list(std::size_t count) {
+		inline void allocate_component_list(std::size_t count) {
 			memory::StackAllocator::Marker marker = m_additional_stack_allocator.allocate<T>(count);
 			ecs::world_register_component_pool(&m_world, marker, count, component_id<T>(), sizeof(T));
 		}
 
 		template<typename... TArgs>
-		ecs::EntityId create_entity(TArgs&&... components) {
+		inline ecs::EntityId create_entity(TArgs&&... components) {
 			if constexpr (sizeof...(TArgs)) {
 				ecs::ComponentDescriptor component_descriptor_list[sizeof...(TArgs)];
 				component_descriptor_list_helper(component_descriptor_list, std::forward<TArgs>(components)...);
@@ -60,10 +60,10 @@ namespace rglz {
 		}
 
 		template<typename... TArgs>
-		void add_components(ecs::EntityId entity, TArgs&&... components) {
+		inline void add_components(ecs::EntityId entity, TArgs&&... components) {
 			if constexpr (sizeof...(TArgs)) {
 				ecs::ComponentDescriptor component_descriptor_list[sizeof...(TArgs)];
-				component_descriptor_list_helper(&component_descriptor_list, components...);
+				component_descriptor_list_helper(component_descriptor_list, std::forward<TArgs>(components)...);
 				ecs::entity_add_components(&m_world, entity, component_descriptor_list, sizeof...(TArgs));
 			}
 			else {
@@ -72,7 +72,7 @@ namespace rglz {
 		}
 
 		template<typename... TArgs>
-		void remove_components(ecs::EntityId entity) {
+		inline void remove_components(ecs::EntityId entity) {
 			if constexpr (sizeof...(TArgs)) {
 				ecs::ComponentBitmask component_bitmask = 0;
 				component_bitmask_helper<TArgs...>(component_bitmask);
@@ -81,20 +81,24 @@ namespace rglz {
 		}
 
 		template<typename T>
-		void get_component(ecs::EntityId entity) {
+		inline void get_component(ecs::EntityId entity) {
 			ecs::entity_get_component(&m_world, entity, component_id<T>());
 		}
 
 		void destroy_entity(ecs::EntityId entity);
 
 		template<typename... TArgs>
-		bool has_components(ecs::EntityId entity) {
+		inline bool has_components(ecs::EntityId entity) {
 			if constexpr (sizeof...(TArgs)) {
 				ecs::ComponentBitmask component_bitmask = 0;
 				component_bitmask_helper<TArgs...>(component_bitmask);
 				return ecs::entity_has_components(&m_world, entity, component_bitmask);
 			}
 			return false;
+		}
+
+		inline bool is_alive(ecs::EntityId entity) {
+			return ecs::entity_is_alive(&m_world, entity);
 		}
 
 		template<typename T>
@@ -182,6 +186,10 @@ namespace rglz {
 		template<IsOneOf<TArgs>... TComponents>
 		inline bool has_components(Scene& scene, ecs::EntityId entity) {
 			return scene.has_components<TComponents...>(entity);
+		}
+
+		inline bool is_alive(Scene& scene, ecs::EntityId entity) {
+			return scene.is_alive(entity);
 		}
 
 		template<IsOneOf<TArgs...> TComponent>
