@@ -9,6 +9,15 @@ find_package(Boost REQUIRED)
 find_package(easer-lib 1.0 REQUIRED)
 find_package(SDL3 REQUIRED CONFIG REQUIRED)
 
+
+option(ENABLE_ASAN "Enable Address Sanitizer" OFF)
+
+if(ENABLE_ASAN)
+    # Apply to all targets defined after this point
+    add_compile_options(-fsanitize=address -g -fno-omit-frame-pointer)
+    add_link_options(-fsanitize=address)
+endif()
+
 # set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fsanitize=address")
 # set(CMAKE_LINKER_FLAGS "${CMAKE_LINKER_FLAGS} -fsanitize=address")
 
@@ -19,6 +28,60 @@ set(
 set(
 	SRC_DIR
 	${CMAKE_SOURCE_DIR}/src)
+
+set(
+	SHADERS_DIR
+	${SRC_DIR}/gfx/shaders)
+
+set(
+	COMPILED_SHADERS_DIR
+	${SRC_DIR}/gfx/compiled_shaders)
+
+file(MAKE_DIRECTORY ${COMPILED_SHADERS_DIR})
+
+file(GLOB_RECURSE SHADER_FILES CONFIGURE_DEPENDS 
+	"${SHADERS_DIR}/*.vert" 
+    "${SHADERS_DIR}/*.frag"
+)
+set(COMPILED_SHADER_HEADERS "")
+
+foreach(SHADER_FILE IN LISTS SHADER_FILES)
+    # 1. Get the base name of the source file (e.g., "sprite.vert")
+    get_filename_component(BASE_NAME "${SHADER_FILE}" NAME)
+
+    # 2. Define the exact output paths for this specific shader
+	set(SPV_OUTPUT_PATH "${COMPILED_SHADERS_DIR}/${BASE_NAME}.spv")
+	set(HEADER_OUTPUT_PATH "${COMPILED_SHADERS_DIR}/${BASE_NAME}.spv.h")
+
+    # 3. Extract just the filename and directory for xxd
+    get_filename_component(SPV_FILENAME "${SPV_OUTPUT_PATH}" NAME)
+    get_filename_component(SPV_DIR "${SPV_OUTPUT_PATH}" DIRECTORY)
+
+    # 4. Generate the build commands
+    add_custom_command(
+        OUTPUT "${HEADER_OUTPUT_PATH}"
+        
+        # Compile GLSL to SPIR-V 
+        COMMAND glslc "${SHADER_FILE}" -o "${SPV_OUTPUT_PATH}"
+        
+        # Run xxd using ONLY the filename
+        COMMAND xxd -i "${SPV_FILENAME}" > "${HEADER_OUTPUT_PATH}"
+        
+        # Force xxd to run inside the output folder so the C array name is clean
+        WORKING_DIRECTORY "${SPV_DIR}"
+        
+        DEPENDS "${SHADER_FILE}"
+    )
+    
+    # Append the generated header to our tracking list
+    list(APPEND COMPILED_SHADER_HEADERS "${HEADER_OUTPUT_PATH}")
+endforeach()
+
+add_custom_target(
+	CompileShaders
+	DEPENDS
+	${COMPILED_SHADER_HEADERS}
+)
 
 set(
 	INCLUDE
@@ -41,6 +104,9 @@ set(
 	${INCLUDE_DIR}/memory/stack_allocator.h
 	${INCLUDE_DIR}/memory/free_list_allocator.h
 	${INCLUDE_DIR}/components/transform_component.h
+	${INCLUDE_DIR}/components/sprite_component.h
+	${INCLUDE_DIR}/systems/sprite_extractor_system.h
+	${INCLUDE_DIR}/systems/camera_extractor_system.h
 	${INCLUDE_DIR}/gfx/context.h
 	${INCLUDE_DIR}/gfx/renderer.h
 	${INCLUDE_DIR}/gfx/renderer_commands.h
@@ -73,6 +139,10 @@ set(
 	${SRC_DIR}/memory/free_list_allocator.cpp
 	${SRC_DIR}/memory/memory_manager.cpp
 	${SRC_DIR}/memory/memory_block.cpp
+
+	${SRC_DIR}/systems/sprite_extractor_system.cpp
+	${SRC_DIR}/systems/camera_extractor_system.cpp
+
 	${SRC_DIR}/gfx/renderer.cpp
 	${SRC_DIR}/gfx/sdl_context.cpp
 	${SRC_DIR}/gfx/sdl_renderer.cpp
@@ -102,6 +172,8 @@ add_library(
 	${INCLUDE}
 	${SRC}
 )
+
+add_dependencies(${PROJECT_NAME} CompileShaders)
 
 target_precompile_headers(
 	${PROJECT_NAME}

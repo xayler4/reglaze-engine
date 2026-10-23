@@ -51,6 +51,6 @@ namespace rglz {
 	}
 
 	void* Engine::internal_allocate(std::size_t size, std::size_t alignment) {
-		return memory::MemoryManager::stack_allocator().allocate(size, alignment);
+		return memory::MemoryManager::core_stack_allocator().allocate(size, alignment);
 	}
 }

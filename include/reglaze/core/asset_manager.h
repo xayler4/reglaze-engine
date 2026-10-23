@@ -2,6 +2,7 @@
 #define RGLZ_ASSET_MANAGER_H
 
 #include "base.h"
+#include "core/image.h"
 #include "core/manual_lifetime.h"
 #include "containers/fixed_vector.h"
 #include "containers/fixed_string.h"
@@ -11,13 +12,6 @@
 #define ASSET_MANAGER_ESR_CHANNEL "asset_manager"
 
 namespace rglz {
-	struct Image {
-		int n_channels;
-		int width;
-		int height;
-		uint8_t* data;
-	};
-
 	class AssetManager {
 	public:
 		struct ArchiveHeader {

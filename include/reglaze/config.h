@@ -3,6 +3,13 @@
 
 // Only edit this file if you are recompiling the library!
 
+#define RGLZ_MAX_COMPONENT_IDS sizeof(ComponentBitmask) * 8
+#define RGLZ_MAX_FIBER_COMPONENT_SYSTEM_FUNCS 32
+#define RGLZ_MAX_ENTITIES (500*500+1)
+
+#define RGLZ_RENDERER_MAX_FRAMES_IN_FLIGHT 3
+#define RGLZ_RENDERER_MAX_SPRITES RGLZ_MAX_ENTITIES
+
 #define RGLZ_FILE_PATH_MAX_LENGTH		128
 
 #define RGLZ_ASSET_MANAGER_MAX_FILES	256

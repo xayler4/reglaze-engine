@@ -13,3 +13,5 @@ build
 .ccls-cache
 .cache
 .clangd
+src/gfx/compiled_shaders/*.spv
+src/gfx/compiled_shaders/*.spv.h

@@ -10,6 +10,10 @@ namespace rglz {
         return hash;
 	}
 
+	std::size_t to_hash(void* ptr) {
+		return reinterpret_cast<std::size_t>(ptr);
+	}
+
 	std::size_t to_hash(uint32_t n) {
 		return n;
 	}

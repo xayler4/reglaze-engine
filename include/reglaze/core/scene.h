@@ -33,16 +33,15 @@ namespace rglz {
 
 		template<typename T>
 		inline static const ecs::ComponentId component_id() {
-			static const ecs::ComponentId component_id = gen_component_id();
 
-			return component_id;
+			return internal_component_id<std::decay_t<T>>();
 		}
 
 	protected:
-		virtual void on_init() = 0;
+		virtual void on_init(std::size_t additional_stack_size) = 0;
 
 		template<typename T>
-		inline void allocate_component_list(std::size_t count) {
+		inline void reserve_components(std::size_t count) {
 			memory::StackAllocator::Marker marker = m_additional_stack_allocator.allocate<T>(count);
 			ecs::world_register_component_pool(&m_world, marker, count, component_id<T>(), sizeof(T));
 		}
@@ -81,8 +80,8 @@ namespace rglz {
 		}
 
 		template<typename T>
-		inline void get_component(ecs::EntityId entity) {
-			ecs::entity_get_component(&m_world, entity, component_id<T>());
+		inline T& get_component(ecs::EntityId entity) {
+			return *static_cast<T*>(ecs::entity_get_component(&m_world, entity, component_id<T>()));
 		}
 
 		void destroy_entity(ecs::EntityId entity);
@@ -108,7 +107,22 @@ namespace rglz {
 			return std::span<T>(static_cast<T*>(component_list), count);
 		}
 
+		template<typename T>
+		std::span<ecs::EntityId> get_entity_list() {
+			uint32_t count;
+			ecs::EntityId* entity_id_list = ecs::world_get_entity_list(&m_world, component_id<T>(), &count);
+
+			return std::span<ecs::EntityId>(entity_id_list, count);
+		}
+
 	private:
+		template<typename T>
+		inline static const ecs::ComponentId internal_component_id() {
+			static const ecs::ComponentId component_id = gen_component_id();
+
+			return component_id;
+		}
+
 		inline static ecs::ComponentId gen_component_id() {
 			static ecs::ComponentId id = 1;
 			return id++;
@@ -119,7 +133,7 @@ namespace rglz {
 			ecs::component_descriptor_create(component_descriptor_p, &current, component_id<T>());
 
 			if constexpr (sizeof...(TArgs)) {
-				component_descriptors_list_helper(component_descriptor_p + 1, rest...);
+				component_descriptor_list_helper(component_descriptor_p + 1, rest...);
 			}
 		}
 
@@ -142,8 +156,13 @@ namespace rglz {
 	};
 
 	class SystemBase {
+	public:
+		virtual ~SystemBase() = default;
+
 	private:
 		SystemBase() = default;
+
+		virtual void get_component_system_descriptor_dynamic(ecs::ComponentSystemDescriptor* descriptor) = 0;
 
 		template<IsSystem T>
 		static void component_system_func(ecs::World* world_p, void* data, void* shared_data) {
@@ -152,6 +171,8 @@ namespace rglz {
 
 		template<typename... TArgs>
 		friend class System;
+
+		friend class SceneStack;
 	};
 
 	template<typename... TArgs>
@@ -159,31 +180,31 @@ namespace rglz {
 	public:
 		virtual void on_process(Scene& scene) = 0;
 
-		template<IsOneOf<TArgs>... TComponents>
+		template<IsOneOf<TArgs...>... TComponents>
 		inline ecs::EntityId create_entity(Scene& scene, TComponents&&... components) {
 			return scene.create_entity(std::forward<TComponents>(components)...);
 		}
 
-		template<IsOneOf<TArgs>... TComponents>
+		template<IsOneOf<TArgs...>... TComponents>
 		inline void add_components(Scene& scene, ecs::EntityId entity, TComponents&&... components) {
 			scene.add_components(entity, std::forward<TComponents>(components)...);
 		}
 
-		template<IsOneOf<TArgs>... TComponents>
+		template<IsOneOf<TArgs...>... TComponents>
 		inline void remove_components(Scene& scene, ecs::EntityId entity) {
 			scene.remove_components<TComponents...>(entity);
 		}
 
 		template<IsOneOf<TArgs...> TComponent>
-		inline void get_component(Scene& scene, ecs::EntityId entity) {
-			scene.get_component<TComponent>(scene, entity);
+		inline TComponent& get_component(Scene& scene, ecs::EntityId entity) {
+			return scene.get_component<TComponent>(entity);
 		}
 
 		inline void destroy_entity(Scene& scene, ecs::EntityId entity) {
 			scene.destroy_entity(entity);
 		}
 
-		template<IsOneOf<TArgs>... TComponents>
+		template<IsOneOf<TArgs...>... TComponents>
 		inline bool has_components(Scene& scene, ecs::EntityId entity) {
 			return scene.has_components<TComponents...>(entity);
 		}
@@ -197,10 +218,19 @@ namespace rglz {
 			return scene.get_component_view<TComponent>();
 		}
 
+		template<IsOneOf<TArgs...> TComponent>
+		inline std::span<ecs::EntityId> get_entity_list(Scene& scene) {
+			return scene.get_entity_list<TComponent>();
+		}
+
 	protected:
 		System() = default;
 
 	private:
+		void get_component_system_descriptor_dynamic(ecs::ComponentSystemDescriptor* descriptor) override {
+			get_component_system_descriptor<System<TArgs...>>(descriptor, this);
+		}
+
 		template<IsSystem T>
 		static void get_component_system_descriptor(ecs::ComponentSystemDescriptor* descriptor, void* data) {
 
@@ -213,16 +243,16 @@ namespace rglz {
 			
 		}
 
-		template<typename T, IsSystem... TSystems>
+		template<typename T, typename... TComponents>
 		static void component_system_descriptor_helper(ecs::ComponentSystemDescriptor* component_system_descriptor_p) {
 			if constexpr (std::is_const_v<T>) {
-				component_system_descriptor_p->component_read_bitmask |= ecs::component_id_to_bitmask(Scene::component_id<T>);
+				component_system_descriptor_p->component_read_bitmask |= ecs::component_id_to_bitmask(Scene::component_id<T>());
 			} 
 			else {
 				component_system_descriptor_p->component_write_bitmask |= ecs::component_id_to_bitmask(Scene::component_id<T>());
 			}
-			if constexpr (sizeof...(TSystems)) {
-				component_system_descriptor_helper<TSystems...>(component_system_descriptor_p);
+			if constexpr (sizeof...(TComponents)) {
+				component_system_descriptor_helper<TComponents...>(component_system_descriptor_p);
 			}
 		}
 
@@ -325,7 +355,7 @@ namespace rglz {
 			last_scene_node->next_ptr = scene_node;
 			m_scene_node_head.prev_ptr = scene_node;
 
-			scene_node->scene_ptr->on_init();
+			scene_node->scene_ptr->on_init(additional_stack_size);
 
 			return SceneMarker(static_cast<TScene*>(scene_node->scene_ptr));
 		}
@@ -393,6 +423,8 @@ namespace rglz {
 			ecs::component_system_descriptor_list_sort(component_system_descriptor_list, sizeof...(TSystems));
 			m_fiber_list_count = ecs::component_system_fiber_list_create(component_system_descriptor_list, sizeof...(TSystems), m_component_system_fiber_list, s_max_thread_count);
 		}
+
+		void set_active_scene(SceneMarkerBase marker, const std::span<SystemBase*> systems);
 
 		void reset_active_scene() {
 			m_active_scene.reset();

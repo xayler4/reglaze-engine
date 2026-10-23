@@ -78,7 +78,7 @@ namespace rglz {
 			s_single_frame_allocator = StackAllocator(single_frame_allocator_data, single_frame_size, "Single Frame Allocator");
 			s_free_list_allocator = FreeListAllocator(free_list_allocator_data, free_list_size, "Free List Allocator");
 			
-			RGLZ_ENGINE_LOG_TRACE(name, " - Total allocated size: ", allocation_size, alignln, name, " - Core stack allocator allocated size: ", stack_size, alignln, name, " - Scene stack allocator allocated size: ", scene_stack_size, alignln, name, name, " - Free list allocator allocated size: ", free_list_size, alignln, " - Single frame allocator allocated size: ", single_frame_size);
+			RGLZ_ENGINE_LOG_TRACE(name, " - Total allocated size: ", allocation_size, alignln, name, " - Core stack allocator allocated size: ", stack_size, alignln, name, " - Scene stack allocator allocated size: ", scene_stack_size, alignln, name, " - Free list allocator allocated size: ", free_list_size, alignln, name, " - Single frame allocator allocated size: ", single_frame_size);
 		}
 
 		void MemoryManager::update() {

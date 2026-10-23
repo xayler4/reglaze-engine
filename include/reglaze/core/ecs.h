@@ -5,10 +5,6 @@
 #include "manual_lifetime.h"
 #include <thread>
 
-#define MAX_COMPONENT_IDS sizeof(ComponentBitmask) * 8
-#define MAX_FIBER_COMPONENT_SYSTEM_FUNCS 32
-#define MAX_ENTITIES 128
-
 #define DECLARE_COMPONENT_ID(type) \
 	extern const ComponentId _ecs_id##type;
 
@@ -32,8 +28,8 @@ namespace rglz {
 		} ComponentSystemFiberState;
 
 		typedef struct ComponentPool {
-			EntityId sparse_entity_id_list[MAX_ENTITIES];
-			EntityId dense_entity_id_list[MAX_ENTITIES];
+			EntityId sparse_entity_id_list[RGLZ_MAX_ENTITIES];
+			EntityId dense_entity_id_list[RGLZ_MAX_ENTITIES];
 			void* component_list;
 			uint32_t count;
 			uint32_t capacity;
@@ -41,10 +37,10 @@ namespace rglz {
 		} ComponentPool;
 
 		typedef struct World {
-			EntityId destroy_entity_queue[MAX_ENTITIES];
-			ComponentBitmask component_bitset_list[MAX_ENTITIES];
-			EntityId free_entity_id_list[MAX_ENTITIES];
-			ComponentPool component_pool_list[MAX_COMPONENT_IDS - 1];
+			EntityId destroy_entity_queue[RGLZ_MAX_ENTITIES];
+			ComponentBitmask component_bitset_list[RGLZ_MAX_ENTITIES];
+			EntityId free_entity_id_list[RGLZ_MAX_ENTITIES];
+			ComponentPool component_pool_list[RGLZ_MAX_COMPONENT_IDS - 1];
 			uint32_t free_count;
 			uint32_t destroy_entity_queue_count;
 			ManualLifetime<std::mutex> mutex;
@@ -73,8 +69,8 @@ namespace rglz {
 			ComponentBitmask component_read_bitmask;
 			ManualLifetime<std::thread> thread;
 			std::atomic<uint32_t> thread_state;
-			ComponentSystemFunc func_list[MAX_FIBER_COMPONENT_SYSTEM_FUNCS];
-			void* data_list[MAX_FIBER_COMPONENT_SYSTEM_FUNCS];
+			ComponentSystemFunc func_list[RGLZ_MAX_FIBER_COMPONENT_SYSTEM_FUNCS];
+			void* data_list[RGLZ_MAX_FIBER_COMPONENT_SYSTEM_FUNCS];
 		} ComponentSystemFiber;
 
 		void world_create(World* world_p);
@@ -84,6 +80,8 @@ namespace rglz {
 		void world_register_component_pool(World* world_p, void* component_list, uint32_t capacity, ComponentId component_id, uint32_t size);
 
 		void* world_get_component_list(World* world_p, ComponentId component_id, uint32_t* count);
+
+		EntityId* world_get_entity_list(World* world_p, ComponentId component_id, uint32_t* count);
 
 		void world_flush_entity_destroy_queue(World* world_p);
 

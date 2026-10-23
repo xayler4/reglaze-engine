@@ -24,6 +24,8 @@ pkgs.mkShell {
 		pkgs.boost
 		pkgs.sdl3
 		pkgs.sdl3-shadercross
+		pkgs.shaderc
+    	pkgs.xxd
 		easerlib
 	];
   	shellHook = ''

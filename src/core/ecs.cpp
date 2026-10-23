@@ -11,9 +11,16 @@ namespace rglz {
 		static void internal_entity_remove_components(World* world_p, EntityId entity, ComponentBitmask component_bitmask);
 
 		void world_create(World* world_p) {
-			world_p->free_count = MAX_ENTITIES;
-			for (uint32_t i = 0; i < MAX_ENTITIES; i++) {
-				world_p->free_entity_id_list[i] = MAX_ENTITIES - i - 1;
+			world_p->free_count = RGLZ_MAX_ENTITIES;
+			for (uint32_t i = 0; i < RGLZ_MAX_ENTITIES; i++) {
+				world_p->free_entity_id_list[i] = RGLZ_MAX_ENTITIES - i - 1;
+			}
+
+			for (uint32_t i = 0; i < RGLZ_MAX_COMPONENT_IDS - 1; i++) {
+				world_p->component_pool_list[i].component_list = nullptr;
+				world_p->component_pool_list[i].count = 0;
+				world_p->component_pool_list[i].capacity = 0;
+				world_p->component_pool_list[i].size = 0;
 			}
 			world_p->destroy_entity_queue_count = 0;
 			world_p->mutex.create();
@@ -53,9 +60,18 @@ namespace rglz {
 			return component_pool_p->component_list;
 		}
 
+		EntityId* world_get_entity_list(World* world_p, ComponentId component_id, uint32_t* count) {
+			RGLZ_ENGINE_ALWAYS_ASSERT_MSG(component_id != 0, "component_id = 0 is reserved");
+
+			ComponentPool* component_pool_p = &(world_p->component_pool_list[component_id - 1]);
+			*count = component_pool_p->count;
+
+			return component_pool_p->dense_entity_id_list;
+		}
+
 		EntityId entity_create(World* world_p, ComponentDescriptor* component_descriptor_list, uint32_t count) {
 			std::lock_guard<std::mutex> lock(world_p->mutex);
-			RGLZ_ENGINE_ALWAYS_ASSERT_MSG(count < MAX_COMPONENT_IDS, "Max component ids limit exceeded");
+			RGLZ_ENGINE_ALWAYS_ASSERT_MSG(count < RGLZ_MAX_COMPONENT_IDS, "Max component ids limit exceeded");
 
 			EntityId out_entity = world_generate_entity_id(world_p);
 			world_p->component_bitset_list[out_entity] = 1;
@@ -71,16 +87,13 @@ namespace rglz {
 		}
 
 		void entity_add_components(World* world_p, EntityId entity, ComponentDescriptor* component_descriptor_list, uint32_t count) {
-
-				RGLZ_ENGINE_ALWAYS_ASSERT_MSG(count < MAX_ENTITIES , "Max entities limit exceeded");
+				RGLZ_ENGINE_ALWAYS_ASSERT_MSG(count < RGLZ_MAX_ENTITIES , "Max entities limit exceeded");
 
 			for (uint32_t i = 0; i < count; i++) {
 				ComponentDescriptor* current_descriptor = &(component_descriptor_list[i]);
 				ComponentId component_id = current_descriptor->component_id;
 
 				RGLZ_ENGINE_ALWAYS_ASSERT_MSG(component_id != 0, "component_id = 0 is reserved");
-				RGLZ_ENGINE_LOG_DEBUG(current_descriptor->component_bitmask, " ",current_descriptor->component_id);
-
 				RGLZ_ENGINE_ALWAYS_ASSERT_MSG(!entity_has_components(world_p, entity, current_descriptor->component_bitmask), "Entity already owns one or more of the specified components to add");
 				ComponentPool* component_pool = &(world_p->component_pool_list[component_id - 1]);
 				uint32_t index = component_pool->count++;
@@ -181,7 +194,7 @@ namespace rglz {
 				component_bitmask <<= 1;
 				n_bit++;
 
-			RGLZ_ENGINE_ALWAYS_ASSERT_MSG(n_bit == MAX_COMPONENT_IDS, "component_bitmask has more than one bit set or is equal to 0");
+			RGLZ_ENGINE_ALWAYS_ASSERT_MSG(n_bit == RGLZ_MAX_COMPONENT_IDS, "component_bitmask has more than one bit set or is equal to 0");
 			}
 
 			return n_bit;
@@ -340,7 +353,7 @@ namespace rglz {
 		}
 
 		void component_system_fiber_add_component_system(ComponentSystemFiber* fiber, ComponentSystemDescriptor* descriptor) {
-			RGLZ_ENGINE_ALWAYS_ASSERT_MSG(fiber->count < MAX_FIBER_COMPONENT_SYSTEM_FUNCS, "Max fiber component system funcs limit exceeded");
+			RGLZ_ENGINE_ALWAYS_ASSERT_MSG(fiber->count < RGLZ_MAX_FIBER_COMPONENT_SYSTEM_FUNCS, "Max fiber component system funcs limit exceeded");
 
 			fiber->func_list[fiber->count] = descriptor->func;
 			fiber->data_list[fiber->count] = descriptor->data_p;
@@ -351,7 +364,7 @@ namespace rglz {
 		}
 
 		void component_system_fiber_merge(ComponentSystemFiber* dest_fiber, ComponentSystemFiber* src_fiber) {
-			RGLZ_ENGINE_ALWAYS_ASSERT_MSG(dest_fiber->count + src_fiber->count <= MAX_FIBER_COMPONENT_SYSTEM_FUNCS, "Couldn\'t merge fibers because merged system funcs count exceeds max fiber component system funcs");
+			RGLZ_ENGINE_ALWAYS_ASSERT_MSG(dest_fiber->count + src_fiber->count <= RGLZ_MAX_FIBER_COMPONENT_SYSTEM_FUNCS, "Couldn\'t merge fibers because merged system funcs count exceeds max fiber component system funcs");
 
 			for (uint32_t i = 0; i < src_fiber->count; i++) {
 				dest_fiber->func_list[dest_fiber->count + i] = src_fiber->func_list[i];

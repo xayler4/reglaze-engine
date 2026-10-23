@@ -11,6 +11,9 @@ namespace rglz {
 	}
 
 	Application::~Application() {
+		if (m_renderer.has_value()) {
+			std::destroy_at(m_renderer.value());
+		}
 		flush_logs();
 	}
 
@@ -36,8 +39,9 @@ namespace rglz {
 		m_preferences = prefs;
 	}
 
-	void Application::set_context_and_renderer(gfx::Context ctx, uint16_t renderer_width, uint16_t renderer_height) {
+	void Application::set_context_and_renderer(gfx::Context ctx) {
     	using underlying_t = std::underlying_type_t<gfx::BackendType>;
+		memory::StackAllocator& core_stack_allocator = memory::MemoryManager::core_stack_allocator();
 
 		bool has_backend_failed;
 		uint8_t n_tried_backend = 0;
@@ -50,7 +54,7 @@ namespace rglz {
 
 			try {
 				m_context = std::move(gfx::context_variant_create(ctx));
-				m_renderer = std::move(gfx::renderer_variant_create(context(), renderer_width, renderer_height));
+				m_renderer = gfx::renderer_create(context(), core_stack_allocator);
 			}
 			catch (const BackendError& err) {
 				has_backend_failed = true;
@@ -61,7 +65,14 @@ namespace rglz {
 				if (underlying_t(ctx.backend_type) == underlying_t(gfx::BackendType::Count)) {
 					ctx.backend_type = gfx::BackendType(0);	
 				}
+
+				if (m_renderer.has_value()) {
+					memory::StackAllocator::Marker marker(m_renderer.value());
+					std::destroy_at(m_renderer.value());
+					core_stack_allocator.reset_at_marker(marker);
+				}
 			}
+
 
 			RGLZ_ENGINE_ALWAYS_ASSERT_MSG(n_tried_backend++ != underlying_t(gfx::BackendType::Count), "Initialization failed for all available backends!");
 	}
@@ -69,7 +80,7 @@ namespace rglz {
 }
 
 void* Application::internal_allocate(std::size_t size, std::size_t alignment) {
-	return memory::MemoryManager::stack_allocator().allocate(size, alignment);
+	return memory::MemoryManager::core_stack_allocator().allocate(size, alignment);
 }
 
 void Application::write_attribute(std::string_view attribute_name, bool value) {

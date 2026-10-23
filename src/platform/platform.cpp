@@ -1,4 +1,5 @@
 #include "pch.h"
+#include "memory/stack_allocator.h"
 #include "platform/platform.h"
 
 #if defined RGLZ_PLATFORM_LINUX
@@ -8,27 +9,28 @@ namespace rglz {
 		ContextVariant context_variant_create(const gfx::Context& ctx) {
 			switch (ctx.backend_type) {
 				case gfx::BackendType::SDL:
-				case gfx::BackendType::SDLVulkan: {
+				case gfx::BackendType::SDLVulkan: 
+				default: {
 					return SDLContext(ctx);
 				} break;
 
 			}
-
-			return SDLContext(ctx);
 		}
 
-		RendererVariant renderer_variant_create(gfx::Context& ctx, uint16_t renderer_width, uint16_t renderer_height) {
+		Renderer* renderer_create(gfx::Context& ctx, memory::StackAllocator& allocator) {
 			switch (ctx.backend_type) {
-				case gfx::BackendType::SDL: {
-					return SDLRenderer(static_cast<SDLContext&>(ctx), renderer_width, renderer_height);
-				} break;
 				case gfx::BackendType::SDLVulkan: {
-					return SDLRendererVulkan(static_cast<SDLContext&>(ctx), renderer_width, renderer_height);
+					SDLRendererVulkan* ptr = static_cast<SDLRendererVulkan*>(allocator.allocate<SDLRendererVulkan>(1).ptr());
+					std::construct_at(ptr, static_cast<SDLContext&>(ctx));
+					return ptr;
 				} break;
-
+				case gfx::BackendType::SDL: 
+				default: {
+					SDLRenderer* ptr = static_cast<SDLRenderer*>(allocator.allocate<SDLRenderer>(1).ptr());
+					std::construct_at(ptr, static_cast<SDLContext&>(ctx));
+					return ptr;
+				} break;
 			}
-
-			return SDLRenderer(static_cast<SDLContext&>(ctx), renderer_width, renderer_height);
 		}
 
 		std::string_view backend_type_to_str(BackendType type) {

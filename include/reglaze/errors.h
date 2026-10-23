@@ -7,14 +7,14 @@
 #define RGLZ_ENGINE_ALWAYS_ASSERT_MSG(expr, msg)	\
 	{	\
 		if (!(expr)) {	\
-			rglz::report_engine_assertion_failure(#expr, msg, __LINE__, __FILE__); \
+			rglz::report_engine_assertion_failure(#expr, msg, __LINE__, __FILE_NAME__); \
 		}	\
 	}
 
 #define RGLZ_ALWAYS_ASSERT_MSG(expr, msg)	\
 	{	\
 		if (!(expr)) {	\
-			rglz::report_assertion_failure(#expr, msg, __LINE__, __FILE__);	\
+			rglz::report_assertion_failure(#expr, msg, __LINE__, __FILE_NAME__);	\
 		}	\
 	}
 
@@ -22,13 +22,13 @@
 	#define RGLZ_ENGINE_ASSERT(expr)	\
 		{	\
 			if (!(expr)) {	\
-				rglz::report_engine_assertion_failure(#expr, __LINE__, __FILE__); \
+				rglz::report_engine_assertion_failure(#expr, __LINE__, __FILE_NAME__); \
 			}	\
 		}
 	#define RGLZ_ENGINE_ASSERT_MSG(expr, msg)	\
 		{	\
 			if (!(expr)) {	\
-				rglz::report_engine_assertion_failure(#expr, msg, __LINE__, __FILE__); \
+				rglz::report_engine_assertion_failure(#expr, msg, __LINE__, __FILE_NAME__); \
 			}	\
 		}
 #else
@@ -40,13 +40,13 @@
 	#define RGLZ_ASSERT(expr)	\
 		{	\
 			if (!(expr)) {	\
-				rglz::report_assertion_failure(#expr, __LINE__, __FILE__);	\
+				rglz::report_assertion_failure(#expr, __LINE__, __FILE_NAME__);	\
 			}	\
 		}
 	#define RGLZ_ASSERT_MSG(expr, msg)	\
 		{	\
 			if (!(expr)) {	\
-				rglz::report_assertion_failure(#expr, msg, __LINE__, __FILE__);	\
+				rglz::report_assertion_failure(#expr, msg, __LINE__, __FILE_NAME__);	\
 			}	\
 		}
 #else

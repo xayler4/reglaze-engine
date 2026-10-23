@@ -6,6 +6,10 @@ namespace rglz {
 			: m_ptr(ptr)
 		{}
 
+		StackAllocator::Marker::Marker(void* ptr) 
+			: m_ptr((uint8_t*)ptr)
+		{}
+
 		StackAllocator::StackAllocator(std::uint8_t* memory, std::size_t size, const FixedString<32> name)
 			: m_memory(memory)
 			, m_marker(memory)

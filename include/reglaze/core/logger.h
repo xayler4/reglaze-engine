@@ -4,6 +4,7 @@
 #include "base.h"
 #include "easer/easer.h"
 #include "containers/fixed_string.h"
+#include "math/mat.h"
 #include <charconv>
 #include <atomic>
 #include <array>
@@ -299,6 +300,27 @@ ESR_REGISTER_PROC_W("Logger", T, v, stream,
 		}
 	})
 );
+
+template<ESR_REGISTRY_PARAMS>
+ESR_REGISTER_PROC_W("Logger", rglz::Mat4, v, stream, 
+	ESR_PACK({
+		stream << "[ ";
+		for (int i = 0; i < 4; i++) {
+			for (int j = 0; j < 4; j++) {
+				stream << v(i, j);
+				
+				if (j < 3) {
+					stream << " ";
+				}
+			}
+			
+			if (i < 3) {
+				stream << "; ";
+			}
+		}
+		stream << " ]";
+			})
+		);
 
 template<ESR_REGISTRY_PARAMS>
 ESR_REGISTER_PROC_W("Logger", rglz::LoggerSeverity, s, stream,

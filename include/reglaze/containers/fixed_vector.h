@@ -29,7 +29,7 @@ namespace rglz {
 		FixedVector(std::initializer_list<T> list)
 			: m_size(list.size())
 		{
-			RGLZ_ENGINE_ASSERT(m_size < UCapacity);
+			RGLZ_ENGINE_ASSERT(m_size <= UCapacity);
 
 			std::copy(list.begin(), list.end(), m_data.begin());
 
@@ -39,7 +39,7 @@ namespace rglz {
 		FixedVector(const std::array<T, USize>& data)
 			: m_size(data.size())
 		{
-			RGLZ_ENGINE_ASSERT(m_size < UCapacity);
+			RGLZ_ENGINE_ASSERT(m_size <= UCapacity);
 
 			std::copy(data.begin(), data.end(), m_data.begin());
 		}
@@ -47,18 +47,18 @@ namespace rglz {
 		FixedVector(std::size_t size)
 			: m_size(size) 
 		{
-			RGLZ_ENGINE_ASSERT(m_size < UCapacity);
+			RGLZ_ENGINE_ASSERT(m_size <= UCapacity);
 		}
 
 		void extend(const T& data) {
-			RGLZ_ENGINE_ASSERT(m_size + 1 < UCapacity);
+			RGLZ_ENGINE_ASSERT(m_size + 1 <= UCapacity);
 
 			m_data[m_size] = data;
 			m_size ++;
 		} 
 
 		void extend(std::initializer_list<T> list) {
-			RGLZ_ENGINE_ASSERT(m_size + list.size() < UCapacity);
+			RGLZ_ENGINE_ASSERT(m_size + list.size() <= UCapacity);
 			
 			std::copy(list.begin(), list.end(), end());
 			m_size += list.size();
@@ -66,7 +66,7 @@ namespace rglz {
 
 		template<std::size_t USize>
 		void extend(const std::array<T, USize>& data) {
-			RGLZ_ENGINE_ASSERT(m_size + data.size() < UCapacity);
+			RGLZ_ENGINE_ASSERT(m_size + data.size() <= UCapacity);
 
 			std::copy(data.begin(), data.end(), end());
 			m_size += data.size();
@@ -81,9 +81,36 @@ namespace rglz {
 		} 
 
 		void resize(std::size_t size) {
-			RGLZ_ENGINE_ASSERT(m_size < size);
+			RGLZ_ENGINE_ASSERT(size <= UCapacity);
+
+			if (size == m_size) {
+				return;
+			}
+			else if (size > m_size) {
+				for (std::size_t i = m_size; i < size; i++) {
+					std::construct_at(&m_data[i]);
+				}
+			}
+			else {
+				for (std::size_t i = m_size; i < size; i++) {
+					std::destroy_at(&m_data[i]);
+				}
+			}
 
 			m_size = size;
+		}
+
+		void push_back(const T& value) {
+			RGLZ_ENGINE_ASSERT(m_size + 1 <= UCapacity);
+			m_data[m_size] = std::move(value);
+			m_size++;
+		}
+
+		template<typename... TArgs>
+		void emplace_back(TArgs... args) {
+			RGLZ_ENGINE_ASSERT(m_size + 1 <= UCapacity);
+			std::construct_at(&m_data[m_size], std::forward<TArgs>(args)...);
+			m_size++;
 		}
 
 		inline std::size_t size() const {
@@ -92,6 +119,10 @@ namespace rglz {
 
 		inline std::size_t capacity() const {
 			return UCapacity;
+		}
+
+		inline const T* data() const {
+			return m_data.data();
 		}
 
 		inline T* data() {

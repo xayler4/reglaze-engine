@@ -29,6 +29,11 @@ namespace rglz {
 			return m_actions;
 		}
 
+		inline const gfx::Renderer& renderer() const {
+			RGLZ_ENGINE_ASSERT(m_renderer.has_value());
+			return *(m_renderer.value());
+		}
+
 	protected:
 		virtual void on_startup();
 
@@ -38,7 +43,7 @@ namespace rglz {
 
 		void set_preferences(const Preferences& prefs);
 
-		void set_context_and_renderer(gfx::Context ctx, uint16_t renderer_width, uint16_t renderer_height);
+		void set_context_and_renderer(gfx::Context ctx);
 
 		void write_attribute(std::string_view attribute_name, bool value);
 
@@ -64,13 +69,6 @@ namespace rglz {
 			return m_preferences;
 		}
 
-		inline gfx::Renderer& renderer() {
-			RGLZ_ENGINE_ASSERT(m_renderer.has_value());
-			return std::visit([](auto& r) -> gfx::Renderer& {
-				return r;
-			}, m_renderer.value());
-		}
-
 		inline gfx::Context& context() {
 			RGLZ_ENGINE_ASSERT(m_context.has_value());
 			return std::visit([](auto& c) -> gfx::Context& {
@@ -80,6 +78,11 @@ namespace rglz {
 
 		inline ActionManager& actions() {
 			return m_actions;
+		}
+
+		inline gfx::Renderer& renderer() {
+			RGLZ_ENGINE_ASSERT(m_renderer.has_value());
+			return *(m_renderer.value());
 		}
 
 	private:
@@ -94,7 +97,7 @@ namespace rglz {
 		bool m_is_running;
 		std::optional<Preferences> m_preferences;
 		std::optional<gfx::ContextVariant> m_context;
-		std::optional<gfx::RendererVariant> m_renderer;
+		std::optional<gfx::Renderer*> m_renderer;
 		ActionManager m_actions;
 
 		friend class Engine;

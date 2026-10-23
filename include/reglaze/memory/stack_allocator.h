@@ -11,8 +11,17 @@ namespace rglz {
 			class Marker {
 			public:
 				Marker(std::uint8_t* ptr);
+				Marker(void* ptr);
 
 				inline operator std::uint8_t*() const {
+					return m_ptr;
+				}
+
+				inline operator void*() const {
+					return m_ptr;
+				}
+
+				void* ptr() const {
 					return m_ptr;
 				}
 

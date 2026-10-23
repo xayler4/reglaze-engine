@@ -21,7 +21,7 @@ namespace rglz {
 			static void update();
 			static void shutdown();
 
-			inline static StackAllocator& stack_allocator() {
+			inline static StackAllocator& core_stack_allocator() {
 				return s_core_allocator;
 			}
 

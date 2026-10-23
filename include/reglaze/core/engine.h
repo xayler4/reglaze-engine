@@ -194,6 +194,14 @@ namespace rglz {
 			return *s_app;
 		}
 
+		static inline gfx::Renderer& app_renderer() {
+			return s_app->renderer();
+		}
+
+		static inline const gfx::Context& app_context() {
+			return s_app->renderer().context();
+		}
+
 		static inline Logger<RGLZ_LOGGER_LOG_MAX_CUNCURRENT_LOGS>& app_logger() {
 			return *(static_cast<Logger<RGLZ_LOGGER_LOG_MAX_CUNCURRENT_LOGS>*>(s_app));
 		}
