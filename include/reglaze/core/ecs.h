@@ -24,6 +24,7 @@ namespace rglz {
 		typedef enum {
 			COMPONENT_SYSTEM_FIBER_INACTIVE = 0,
 			COMPONENT_SYSTEM_FIBER_IDLING,
+			COMPONENT_SYSTEM_FIBER_STEALING,
 			COMPONENT_SYSTEM_FIBER_RUNNING
 		} ComponentSystemFiberState;
 
@@ -47,6 +48,18 @@ namespace rglz {
 		} World;
 
 		typedef void(*ComponentSystemFunc)(World*, void*, void*);
+		typedef void(*ParallelForFunc)(void* data, uint32_t start_idx, uint32_t end_idx);
+
+        typedef struct ParallelJob {
+            ParallelForFunc func;
+            void* data;
+            uint32_t total_count;
+            uint32_t chunk_size;
+            uint32_t total_chunks;
+            std::atomic<uint32_t> current_idx;
+            std::atomic<uint32_t> completed_chunks;
+            std::atomic<uint32_t> active_workers;
+        } ParallelJob;
 
 		typedef struct ComponentDescriptor {
 			void* component_p;
@@ -69,8 +82,10 @@ namespace rglz {
 			ComponentBitmask component_read_bitmask;
 			ManualLifetime<std::thread> thread;
 			std::atomic<uint32_t> thread_state;
+			std::atomic<ParallelJob*> current_job;
 			ComponentSystemFunc func_list[RGLZ_MAX_FIBER_COMPONENT_SYSTEM_FUNCS];
 			void* data_list[RGLZ_MAX_FIBER_COMPONENT_SYSTEM_FUNCS];
+			std::span<ComponentSystemFiber> fiber_list;
 		} ComponentSystemFiber;
 
 		void world_create(World* world_p);
@@ -118,6 +133,7 @@ namespace rglz {
 		void component_system_fiber_list_destroy(ComponentSystemFiber* fiber_list, uint16_t count);
 
 		void component_system_fiber_list_run(ComponentSystemFiber* fiber_list, uint16_t count, World* world_p, void* shared_data_p);
+		void parallel_for(ParallelForFunc func, void* data, uint32_t count, uint32_t chunk_size = 64);
 	}
 }
 

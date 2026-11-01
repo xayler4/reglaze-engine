@@ -8,14 +8,36 @@ namespace rglz {
 		// std::span<TransformComponent> transform_component_view = get_component_view<TransformComponent>(scene);
 		std::span<ecs::EntityId> sprite_entity_list = get_entity_list<const SpriteComponent>(scene);
 
-		for (ecs::EntityId entity : sprite_entity_list) {
-			if (!has_components<const TransformComponent>(scene, entity)) {
-				continue;
-			}
-			const TransformComponent& transform_component = get_component<const TransformComponent>(scene, entity);
-			const SpriteComponent& sprite_component = get_component<const SpriteComponent>(scene, entity);
+		parallel_for(scene, sprite_entity_list.size(), 128, [&sprite_entity_list](ReadOnlyScene scene, uint32_t start_idx, uint32_t end_idx) {
+			FixedVector<gfx::DrawSpriteCommand, 128> draw_sprite_command_list;
+			for (uint32_t i = start_idx; i < end_idx; i++) {
+				ecs::EntityId entity = sprite_entity_list[i];
 
-			Engine::app_renderer().push_draw_sprite_command(transform_component.transform_mat, sprite_component.image);
-		}
+				if (!scene.has_components<const TransformComponent>(entity)) {
+					continue;
+				}
+				const TransformComponent& transform_component = scene.get_component<const TransformComponent>(entity);
+				const SpriteComponent& sprite_component = scene.get_component<const SpriteComponent>(entity);
+
+				draw_sprite_command_list.push_back({transform_component.transform_mat, sprite_component.image});
+
+			}
+
+			static std::mutex s_renderer_mutex;
+    		std::lock_guard<std::mutex> lock(s_renderer_mutex);
+			for (const gfx::DrawSpriteCommand& command : draw_sprite_command_list) {
+				Engine::app_renderer().push_draw_sprite_command(command.transform, command.gpu_image);
+			}
+		});
+
+		// for (ecs::EntityId entity : sprite_entity_list) {
+		// 	if (!has_components<const TransformComponent>(scene, entity)) {
+		// 		continue;
+		// 	}
+		// 	const TransformComponent& transform_component = get_component<const TransformComponent>(scene, entity);
+		// 	const SpriteComponent& sprite_component = get_component<const SpriteComponent>(scene, entity);
+
+		// 	Engine::app_renderer().push_draw_sprite_command(transform_component.transform_mat, sprite_component.image);
+		// }
 	}
 }

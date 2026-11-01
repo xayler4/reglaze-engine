@@ -1,5 +1,6 @@
 #include "pch.h"
 #include "memory/memory_manager.h"
+#include <chrono>
 
 namespace rglz {
 	Logger<3> Engine::s_logger = Logger<3>("rglz_latest_log.txt", "RGLZ");
@@ -46,7 +47,12 @@ namespace rglz {
 
 			s_app->actions().update();
 			memory::MemoryManager::update();
-
+			static auto last_time = std::chrono::steady_clock::now(); static int frames = 0; frames++;
+			if (auto now = std::chrono::steady_clock::now(); now - last_time >= std::chrono::seconds(1)) {
+				RGLZ_ENGINE_LOG_INFO("FPS: ", frames, alignln);
+				frames = 0;
+				last_time = now;
+            }
 		}
 	}
 

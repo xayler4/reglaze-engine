@@ -19,6 +19,8 @@ namespace rglz {
 	template<typename... TArgs>
 	class System;
 
+	class ReadOnlyScene;
+
 	template<typename T>
 	concept IsSystem = std::is_base_of_v<SystemBase, std::decay_t<T>>;
 
@@ -153,7 +155,36 @@ namespace rglz {
 
 		template<typename... TArgs>
 		friend class System;
+
+		friend class ReadOnlyScene;
 	};
+
+	class ReadOnlyScene {
+    public:
+        ReadOnlyScene(Scene& scene) : m_scene(scene) {}
+
+        template<typename T>
+        inline T& get_component(ecs::EntityId entity) const {
+            return m_scene.get_component<T>(entity);
+        }
+
+        template<typename... TArgs>
+        inline bool has_components(ecs::EntityId entity) const {
+            return m_scene.has_components<TArgs...>(entity);
+        }
+
+		template<typename T>
+		inline std::span<ecs::EntityId> get_entity_list() const {
+			return m_scene.get_entity_list<T>();
+		}
+
+        inline bool is_alive(ecs::EntityId entity) const {
+            return m_scene.is_alive(entity);
+        }
+
+    private:
+        Scene& m_scene;
+    };
 
 	class SystemBase {
 	public:
@@ -179,6 +210,26 @@ namespace rglz {
 	class System : public SystemBase {
 	public:
 		virtual void on_process(Scene& scene) = 0;
+
+		template<typename Lambda>
+        inline void parallel_for(Scene& scene, uint32_t count, uint32_t chunk_size, Lambda&& lambda) {
+            
+            ReadOnlyScene read_only_scene(scene);
+
+            using TDecayedLambda = std::decay_t<Lambda>;
+            auto payload = std::make_pair(&read_only_scene, &lambda);
+
+            ecs::ParallelForFunc trampoline = [](void* data, uint32_t start_idx, uint32_t end_idx) {
+                auto* packed_data = static_cast<std::pair<ReadOnlyScene*, TDecayedLambda*>*>(data);
+                
+                ReadOnlyScene* read_only_scene = packed_data->first;
+                TDecayedLambda* user_lambda = packed_data->second;
+                
+                (*user_lambda)(*read_only_scene, start_idx, end_idx);
+            };
+
+            ecs::parallel_for(trampoline, &payload, count, chunk_size);
+        }
 
 		template<IsOneOf<TArgs...>... TComponents>
 		inline ecs::EntityId create_entity(Scene& scene, TComponents&&... components) {
@@ -427,6 +478,7 @@ namespace rglz {
 		void set_active_scene(SceneMarkerBase marker, const std::span<SystemBase*> systems);
 
 		void reset_active_scene() {
+			ecs::component_system_fiber_list_destroy(m_component_system_fiber_list, m_fiber_list_count);
 			m_active_scene.reset();
 			m_fiber_list_count = 0;
 		}

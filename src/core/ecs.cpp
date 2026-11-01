@@ -2,6 +2,18 @@
 
 namespace rglz {
 	namespace ecs {
+		thread_local ComponentSystemFiber* tls_current_fiber = nullptr;
+        static std::atomic<bool> g_fiber_locks[RGLZ_MAX_THREADS];
+
+        static void lock_fiber(uint32_t idx) {
+            while (g_fiber_locks[idx].exchange(true, std::memory_order_acquire)) {
+                std::this_thread::yield();
+            }
+        }
+
+        static void unlock_fiber(uint32_t idx) {
+            g_fiber_locks[idx].store(false, std::memory_order_release);
+        }
 		static EntityId world_generate_entity_id(World* world_p);
 		static void world_free_entity_id(World* world_p, EntityId entity);
 		static void component_system_fiber_add_component_system(ComponentSystemFiber* fiber, ComponentSystemDescriptor* descriptor);
@@ -9,6 +21,7 @@ namespace rglz {
 		static void component_system_fiber_shift_left_to_fill_empty_slot(ComponentSystemFiber* list, uint32_t count, uint32_t empty_slot_index);
 		static void component_system_fiber_thread(void* data_p);
 		static void internal_entity_remove_components(World* world_p, EntityId entity, ComponentBitmask component_bitmask);
+		static bool do_job_work(ParallelJob* job);
 
 		void world_create(World* world_p) {
 			world_p->free_count = RGLZ_MAX_ENTITIES;
@@ -224,6 +237,7 @@ namespace rglz {
 			uint32_t i = 0;
 			uint16_t j = 0;
 			bool is_component_system_fiber_list_count_out_max = false;
+			uint16_t max_component_system_fiber_list_count_minus_parallel = (max_component_system_fiber_list_count > 2) ? (max_component_system_fiber_list_count - 2) : max_component_system_fiber_list_count;
 
 			// a complete iteration of the loop will sort all component systems with an overlapping write bitmask with the first component system processed in the fiber
 			while (i < component_system_descriptor_list_count) {
@@ -259,24 +273,23 @@ namespace rglz {
 					component_system_fiber_add_component_system(current_fiber, current_descriptor);
 					i++;
 					j++;
-					if (j == max_component_system_fiber_list_count) {
+					if (j == max_component_system_fiber_list_count_minus_parallel) {
 						is_component_system_fiber_list_count_out_max = true;
 						j = 0;
 					}
 				}
 			}
 			
-			uint16_t component_system_fiber_list_count_out;
+			uint16_t component_system_fiber_list_count_out = max_component_system_fiber_list_count;
 
-			if (is_component_system_fiber_list_count_out_max) {
-				component_system_fiber_list_count_out = max_component_system_fiber_list_count;
-			}
-			else {
-				component_system_fiber_list_count_out = j;
+			for (uint16_t k = 0; k < component_system_fiber_list_count_out; k++) {
+				component_system_fiber_list[k].fiber_list = std::span<ComponentSystemFiber>(component_system_fiber_list, component_system_fiber_list_count_out);
+				component_system_fiber_list[k].current_job.store(nullptr);
+				component_system_fiber_list[k].thread_state.store((uint32_t)COMPONENT_SYSTEM_FIBER_IDLING, std::memory_order_relaxed);
 			}
 
-			uint16_t component_system_fiber_list_count_out_minus_one = (component_system_fiber_list_count_out - 1) * (bool)(component_system_fiber_list_count_out);
-			for (uint16_t k = 0; k < component_system_fiber_list_count_out - 1; k++) {
+			uint16_t component_system_fiber_list_count_out_minus_one = (component_system_fiber_list_count_out - 1) * (bool)component_system_fiber_list_count_out;
+			for (uint16_t k = 0; k < component_system_fiber_list_count_out_minus_one; k++) {
 				component_system_fiber_list[k].thread.create(component_system_fiber_thread, (void*)(component_system_fiber_list + k));
 			}
 
@@ -316,8 +329,17 @@ namespace rglz {
 		}
 
 		void component_system_fiber_list_destroy(ComponentSystemFiber* fiber_list, uint16_t count) {
-			for (uint16_t i = 0; i < count; i++) {
+
+			uint16_t count_minus_one = (count - 1) * (bool)count;
+			for (uint16_t i = 0; i < count_minus_one; i++) {
+                ComponentSystemFiber* current_fiber = fiber_list + i;
+                current_fiber->thread_state.store((uint32_t)COMPONENT_SYSTEM_FIBER_INACTIVE, std::memory_order_release);
+            }
+			for (uint16_t i = 0; i < count_minus_one; i++) {
 				ComponentSystemFiber* current_fiber = fiber_list + i;
+				if (current_fiber->thread.get().joinable()) {
+                    current_fiber->thread.get().join(); 
+                }
 				current_fiber->thread.destroy();
 			}
 		}
@@ -332,15 +354,40 @@ namespace rglz {
 				current_fiber->thread_state.store((uint32_t)COMPONENT_SYSTEM_FIBER_RUNNING);
 			}
 
-			ComponentSystemFiber* current_fiber = fiber_list + count_minus_one;
-			for (uint16_t i = 0; i < current_fiber->count; i++) {
-				current_fiber->func_list[i](world_p, current_fiber->data_list[i], data_p);
-			}
+            ComponentSystemFiber* main_fiber = fiber_list + count_minus_one;
+            tls_current_fiber = main_fiber; 
+            
+            for (uint16_t i = 0; i < main_fiber->count; i++) {
+                main_fiber->func_list[i](world_p, main_fiber->data_list[i], data_p);
+            }
 
-			for (uint16_t i = 0; i < count_minus_one; i++) {
-				ComponentSystemFiber* current_fiber = fiber_list + i;
-				while (current_fiber->thread_state.load() != (uint32_t)COMPONENT_SYSTEM_FIBER_IDLING);
-			}
+            for (uint16_t i = 0; i < count_minus_one; i++) {
+                ComponentSystemFiber* wait_fiber = fiber_list + i;
+                while (wait_fiber->thread_state.load(std::memory_order_acquire) == COMPONENT_SYSTEM_FIBER_RUNNING) {
+                    bool stole = false;
+                    for (auto& other_fiber : main_fiber->fiber_list) {
+						if (&other_fiber == main_fiber) continue;
+                        
+                        uint16_t other_idx = &other_fiber - main_fiber->fiber_list.data();
+                        lock_fiber(other_idx);
+                        ParallelJob* job = other_fiber.current_job.load(std::memory_order_relaxed);
+                        if (job) {
+                            job->active_workers.fetch_add(1, std::memory_order_acquire);
+                        }
+                        unlock_fiber(other_idx);
+
+                        if (job) {
+                            if (other_fiber.current_job.load(std::memory_order_acquire) == job) {
+                                if (do_job_work(job)) stole = true;
+                            }
+                            job->active_workers.fetch_sub(1, std::memory_order_release);
+                            if (stole) break;
+                        }
+                    }
+                    if (!stole) std::this_thread::yield();
+                }
+            }
+            tls_current_fiber = nullptr;
 		}
 
 		EntityId world_generate_entity_id(World* world_p) {
@@ -399,17 +446,93 @@ namespace rglz {
 
 		void component_system_fiber_thread(void* data_p) {
 			ComponentSystemFiber* fiber = (ComponentSystemFiber*)data_p;
+            tls_current_fiber = fiber; 
 
-			fiber->thread_state.store(COMPONENT_SYSTEM_FIBER_IDLING);
+            while (fiber->thread_state.load(std::memory_order_acquire) != COMPONENT_SYSTEM_FIBER_INACTIVE) {
+                uint32_t state = fiber->thread_state.load(std::memory_order_acquire);
+                
+                if (state == COMPONENT_SYSTEM_FIBER_RUNNING) {
+                    for (uint32_t i = 0; i < fiber->count; i++) {
+                        fiber->func_list[i](fiber->world_p, fiber->data_list[i], fiber->data_p);
+                    }
+                    uint32_t expected = COMPONENT_SYSTEM_FIBER_RUNNING;
+                    fiber->thread_state.compare_exchange_strong(expected, COMPONENT_SYSTEM_FIBER_STEALING);
+                } 
+                else if (state == COMPONENT_SYSTEM_FIBER_STEALING || state == COMPONENT_SYSTEM_FIBER_IDLING) {
+                    bool stole = false;
+                    for (auto& other_fiber : fiber->fiber_list) {
+                        if (&other_fiber == fiber) continue;
 
-			while (fiber->thread_state.load() != COMPONENT_SYSTEM_FIBER_INACTIVE) {
-				while (fiber->thread_state.load() == COMPONENT_SYSTEM_FIBER_IDLING);	
-				for (uint32_t i = 0; i < fiber->count; i++) {
-					fiber->func_list[i](fiber->world_p, fiber->data_list[i], fiber->data_p);
-				}
-				uint32_t expected = COMPONENT_SYSTEM_FIBER_RUNNING;
-				while (!fiber->thread_state.compare_exchange_weak(expected, COMPONENT_SYSTEM_FIBER_IDLING));
-			}
+						uint32_t other_idx = &other_fiber - fiber->fiber_list.data();
+                        
+                        lock_fiber(other_idx);
+                        ParallelJob* job = other_fiber.current_job.load(std::memory_order_relaxed);
+                        if (job) {
+                            job->active_workers.fetch_add(1, std::memory_order_acquire);
+                        }
+                        unlock_fiber(other_idx);
+
+                        if (job) {
+                            if (other_fiber.current_job.load(std::memory_order_acquire) == job) {
+                                if (do_job_work(job)) stole = true;
+                            }
+                            job->active_workers.fetch_sub(1, std::memory_order_release);
+                            if (stole) break; 
+                        }
+                    }
+                    
+                    if (!stole) std::this_thread::yield();
+                }
+            }
 		}
+
+		void parallel_for(ParallelForFunc func, void* data, uint32_t count, uint32_t chunk_size) {
+            if (count == 0) return;
+            
+            ComponentSystemFiber* current_fiber = tls_current_fiber;
+            RGLZ_ENGINE_ASSERT(current_fiber != nullptr);
+            
+            ParallelJob job;
+            job.func = func;
+            job.data = data;
+            job.total_count = count;
+            job.chunk_size = chunk_size > 0 ? chunk_size : 64;
+            job.total_chunks = (count + job.chunk_size - 1) / job.chunk_size;
+            job.current_idx.store(0, std::memory_order_relaxed);
+            job.completed_chunks.store(0, std::memory_order_relaxed);
+            job.active_workers.store(0, std::memory_order_relaxed);
+            
+			uint16_t fiber_idx = current_fiber - current_fiber->fiber_list.data();
+            current_fiber->current_job.store(&job, std::memory_order_release);
+            
+            while (do_job_work(&job));
+            
+            while (job.completed_chunks.load(std::memory_order_acquire) < job.total_chunks) {
+                std::this_thread::yield();
+            }
+            
+			lock_fiber(fiber_idx);
+            current_fiber->current_job.store(nullptr, std::memory_order_relaxed);
+            unlock_fiber(fiber_idx);
+
+            while (job.active_workers.load(std::memory_order_acquire) > 0) {
+                std::this_thread::yield();
+            }
+        }
+
+		bool do_job_work(ParallelJob* job) {
+            uint32_t start_idx = job->current_idx.fetch_add(job->chunk_size, std::memory_order_relaxed);
+            if (start_idx >= job->total_count) {
+                return false; // No more work available
+            }
+            uint32_t end_idx = start_idx + job->chunk_size;
+            if (end_idx > job->total_count) {
+                end_idx = job->total_count;
+            }
+            
+            job->func(job->data, start_idx, end_idx);
+            job->completed_chunks.fetch_add(1, std::memory_order_release);
+            return true;
+        }
 	}
 }

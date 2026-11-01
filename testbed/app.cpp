@@ -19,7 +19,6 @@ public:
 	}
 
 	void on_init(std::size_t additional_stack_size) {
-
 		int w = 500;
 		int h = 500;
 		reserve_components<TransformComponent>(w*h);
@@ -70,7 +69,7 @@ public:
 			else if (Engine::app().actions().is_down(back_action)) {
 				camera.pos += vertical;
 			}
-			else if (Engine::app().actions().is_down(right_action)) {
+			if (Engine::app().actions().is_down(right_action)) {
 				camera.pos += horizontal;
 
 			}
