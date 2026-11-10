@@ -23,11 +23,7 @@ namespace rglz {
 
 			}
 
-			static std::mutex s_renderer_mutex;
-    		std::lock_guard<std::mutex> lock(s_renderer_mutex);
-			for (const gfx::DrawSpriteCommand& command : draw_sprite_command_list) {
-				Engine::app_renderer().push_draw_sprite_command(command.transform, command.gpu_image);
-			}
+			Engine::app_renderer().push_draw_sprite_command_list(draw_sprite_command_list);
 		});
 
 		// for (ecs::EntityId entity : sprite_entity_list) {

@@ -4,6 +4,7 @@
 #include "base.h"
 #include "math/vec.h"
 #include "easer/easer.h"
+#include <math.h>
 #include <array>
 
 // Column-Major
@@ -172,6 +173,25 @@ namespace rglz {
 
 			return out_mat;
 		}
+
+		static inline Mat4 perspective(float fov_y_radians, float aspect_ratio, float z_near, float z_far) {
+            RGLZ_ENGINE_ASSERT(aspect_ratio != 0.0f);
+            RGLZ_ENGINE_ASSERT(z_near != z_far);
+            
+            Mat4 out_mat{};
+            
+            float tan_half_fov = std::tan(fov_y_radians / 2.0f);
+            
+            out_mat(0, 0) = 1.0f / (aspect_ratio * tan_half_fov);
+            out_mat(1, 1) = 1.0f / tan_half_fov;
+            
+            out_mat(2, 2) = z_far / (z_near - z_far);
+            out_mat(2, 3) = (z_near * z_far) / (z_near - z_far);
+            out_mat(3, 2) = -1.0f;
+            out_mat(3, 3) = 0.0f;
+
+            return out_mat;
+        }
 
 		static inline Mat4 identity() {
 			Mat4 out_mat{};

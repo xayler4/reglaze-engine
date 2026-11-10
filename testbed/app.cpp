@@ -30,7 +30,6 @@ public:
 				float x = (float)j*200;
 				float y = (float)i*200;
 				ecs::EntityId myentity = create_entity(TransformComponent({x, y, 0}, {100.0f, 100.0f, 1.0f}), SpriteComponent{m_image});
-
 			}
 
 		}

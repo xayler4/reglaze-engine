@@ -30,8 +30,15 @@ namespace rglz {
 		}
 
 		void Renderer::push_draw_sprite_command(const Mat4& transform, const GPUImage& gpu_image) {
-			// std::lock_guard<std::mutex> lock(m_draw_sprite_command_list_mutex);
+			std::lock_guard<std::mutex> lock(m_draw_sprite_command_list_mutex);
 			m_draw_sprite_command_list.emplace_back(transform, gpu_image);
+		}
+
+		void Renderer::push_draw_sprite_command_list(std::span<const gfx::DrawSpriteCommand> command_list) {
+			std::lock_guard<std::mutex> lock(m_draw_sprite_command_list_mutex);
+			for (const gfx::DrawSpriteCommand& command : command_list) {
+				m_draw_sprite_command_list.push_back(command);
+			}
 		}
 
 		void Renderer::create_sprite_batch_and_model_list() {

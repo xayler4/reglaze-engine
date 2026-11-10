@@ -8,6 +8,7 @@
 #include "math/mat.h"
 #include <cstdint>
 #include <span>
+#include <mutex>
 
 namespace rglz {
 	class Engine;
@@ -60,6 +61,7 @@ namespace rglz {
 			virtual void destroy_gpu_image(const GPUImage& gpu_image) = 0;
 
 			void push_draw_sprite_command(const Mat4& transform, const GPUImage& gpu_image);
+			void push_draw_sprite_command_list(std::span<const gfx::DrawSpriteCommand> command_list);
 
 			void set_frame_projection_view_mat(const Mat4& mat) {
 				m_projection_view_mat = mat;
@@ -122,6 +124,7 @@ namespace rglz {
 			FixedVector<SpriteBatch, RGLZ_RENDERER_MAX_SPRITES> m_sprite_batch_list;
 			FixedVector<FrameData, RGLZ_RENDERER_MAX_FRAMES_IN_FLIGHT> m_frame_data_list;
 			Mat4 m_projection_view_mat;
+			std::mutex m_draw_sprite_command_list_mutex;
 			Context* m_context;
 			uint8_t m_current_frame_index;
 
